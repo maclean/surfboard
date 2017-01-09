@@ -1,3 +1,10 @@
+
+# Read and plot signal quality data that has been extracted
+# by surfboard.py from a Surfboard SB6190 cable modem.
+# This R code depends on the "eolts" and "isfs" R packages
+# at http://www.eol.ucar.edu/software/R/, for manipulating
+# and plotting time-series.
+
 surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard.dat.gz"))
 {
     x <- scan(file=file,sep=",", quiet=TRUE, what=list(
