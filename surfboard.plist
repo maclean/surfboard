@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>local.surfboard</string>
+    <key>UserName</key>
+    <string>mom_dad</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+	<key>PATH</key>
+	<string>/bin:/usr/bin:/usr/local/bin</string>
+    </dict>
+    <key>WorkingDirectory</key>
+    <string>/Users/mom_dad</string>
+    <key>StandardErrorPath</key>
+    <string>surfboard.stderr</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/sh</string>
+        <string>-c</string>
+        <string>Documents/home/computers_network/surfboard/surfboard.py 2>> surfboard.err | gzip -c >> surfboard.dat.gz</string>
+    </array>
+    <key>KeepAlive</key>
+    <dict>
+	<key>NetworkState</key>
+	<true/>
+    </dict>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+</dict>
+</plist>
