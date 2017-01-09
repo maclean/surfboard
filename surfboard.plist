@@ -20,7 +20,7 @@
     <array>
         <string>/bin/sh</string>
         <string>-c</string>
-        <string>Documents/home/computers_network/surfboard/surfboard.py 2>> surfboard.err | gzip -c >> surfboard.dat.gz</string>
+        <string>git/surfboard/surfboard.py 2>> surfboard.err | gzip -c >> surfboard.dat.gz</string>
     </array>
     <key>KeepAlive</key>
     <dict>
