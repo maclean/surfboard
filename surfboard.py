@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 # vim: set expandtab autoindent ts=4 sw=4:
 
+# Extract useful information about signal quality from an
+# Arris Surfboard SB6170 cable modem.
+# This modem provides a web page of the downstream and upstream signal quality
+# for each channel at http://192.168.100.1/cgi-bin/status.
+# This python script grabs that page, and uses XPath expressions to
+# extract the fields of interest, generating comma-delimited output.
+# of the time and all rows in the "Downstream Bonded Channels" table.
+# The time is grabbed from the "Current System Time" line.
+
+# The upstream information is not currently extracted, but that could be added.
+# Adding a runstring parameter, down or up, may be the best way to implement that.
+
 from __future__ import print_function
 
 import sys
