@@ -60,10 +60,11 @@ plotsurf <- function()
         dat(nts(apply(uncorr@data,1,function(x) { any(!is.na(x) & x < 0)}),
             positions(uncorr),names="restarts",units=""))
 
+    t1 <- start(x[[1]]$ts)
+    # t1 <- utime("2017 jan 2 05:00")
+    t2 <- end(x[[1]]$ts)
     for (ic in 1:nc) {
         if (!all(is.na(nval[,ic])) && max(nval[,ic],na.rm=TRUE) > 10) {
-            t1 <- start(x[[ic]]$ts)
-            t2 <- end(x[[ic]]$ts)
 
             freq <- x[[ic]]$freq
             funits <- x[[ic]]$frequnits
@@ -71,8 +72,8 @@ plotsurf <- function()
             titlestr <- paste0("Channel ",ic, ", id=",id,
                 ", freq=",freq," ",funits)
 
-            pos  <- !is.na(nval[!restart,ic]) & nval[!restart,ic] > 0
-            plot(nval[pos,ic],title=titlestr,type="b",xlim=c(t1,t2))
+            pos  <- !is.na(nval[,ic]) & nval[,ic] > 0 & !restart
+            plot(nval[pos,ic],title=titlestr,type="b",xlim=c(t1,t2),log="y")
 
             pcu <- uncorr[pos,ic] / nval[pos,ic] * 100
             units(pcu) <- "%"
