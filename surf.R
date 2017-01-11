@@ -32,15 +32,31 @@ surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard.dat.gz"))
     tsl
 }
 
-plotsurf <- function()
+plotsurf <- function(channels=NULL)
 {
     Sys.setenv(PROJECT="")
     x <- surfboard()
     par(mfrow=c(2,2),ask=TRUE)
     nc <- length(x)
+
+    alltoo <- FALSE
+    if (is.null(channels)) {
+        channels <- 1:nc
+        alltoo <- TRUE
+    }
+    else {
+        ac <- !is.na(match(channels, 0))
+        if (any(ac)) {
+            channels <- channels[!ac]
+            alltoo <- TRUE
+        }
+    }
+       
     nval <- NULL
     corr <- NULL
     uncorr <- NULL
+    snr <- NULL
+    pow <- NULL
     for (ic in 1:nc) {
 
         corx <- d_by_dt(x[[ic]]$ts[-1,"CorrCw"],dtmax=86400,lag=1,time=1) * 3600
@@ -54,6 +70,9 @@ plotsurf <- function()
         nval <- Cbind(nval,nvalx)
         corr <- Cbind(corr,corx)
         uncorr <- Cbind(uncorr,uncorx)
+        
+        snr <- Cbind(snr, x[[ic]]$ts[,"SNR"])
+        pow <- Cbind(pow, x[[ic]]$ts[,"power"])
     }
     # look for modem restarts when the successive difference of
     # correctables or uncorrectables are negative.
@@ -62,13 +81,23 @@ plotsurf <- function()
         dat(nts(apply(uncorr@data,1,function(x) { any(!is.na(x) & x < 0)}),
             positions(uncorr),names="restarts",units=""))
 
+    if (any(restart)) {
+        nval[restart,] <- NA
+        uncorr[restart,] <- NA
+    }
+        
     t1 <- start(x[[1]]$ts)
     # t1 <- utime("2017 jan 2 05:00")
     t2 <- end(x[[1]]$ts)
 
-    for (ic in 1:nc) {
+    clip("CodeWords", 0.5, 1.e100)
+    clip("UncorrCW", 0, 100)
 
-        if (!all(is.na(nval[,ic])) && max(nval[,ic],na.rm=TRUE) > 10) {
+    for (ic in channels) {
+
+        pos  <- !is.na(nval[,ic]) & nval[,ic]
+
+        if (any(pos)) {
 
             freq <- x[[ic]]$freq
             funits <- x[[ic]]$frequnits
@@ -76,7 +105,7 @@ plotsurf <- function()
             titlestr <- paste0("Channel ",ic, ", id=",id,
                 ", freq=",freq," ",funits)
 
-            pos  <- !is.na(nval[,ic]) & nval[,ic] > 0 & !restart
+
             plot(nval[pos,ic],title=titlestr,type="b",xlim=c(t1,t2),log="y")
 
             pcu <- uncorr[pos,ic] / nval[pos,ic] * 100
@@ -84,8 +113,32 @@ plotsurf <- function()
             units(pcu) <- "%"
             plot(pcu,title=titlestr,type="b",xlim=c(t1,t2))
 
-            plot(x[[ic]]$ts[,"SNR"],title=titlestr,type="b",xlim=c(t1,t2))
-            plot(x[[ic]]$ts[,"power"],title=titlestr,type="b",xlim=c(t1,t2))
+            plot(snr[,ic],title=titlestr,type="b",xlim=c(t1,t2))
+            plot(pow[,ic],title=titlestr,type="b",xlim=c(t1,t2))
         }
+    }
+
+    if (alltoo) {
+        # Plot total and error %age across all channels
+        titlestr <- "All channels"
+
+        nval[, 1] <- apply(nval@data, 1, function(x) { sum(x, na.rm=TRUE) })
+        uncorr[, 1] <- apply(uncorr@data, 1, function(x) { sum(x, na.rm=TRUE) })
+
+        # pos  <- nval[,1] > 0
+
+        plot(nval[,1], title=titlestr,type="b",xlim=c(t1,t2),log="y")
+
+        pcu <- uncorr[,1] / nval[,1] * 100
+        colnames(pcu) <- "UncorrCW"
+        units(pcu) <- "%"
+        plot(pcu,title=titlestr,type="b",xlim=c(t1,t2))
+
+        snr@data[,1] <- apply(snr, 1, function(x) { mean(x, na.rm=T) })
+        pow@data[,1] <- apply(pow, 1, function(x) { mean(x, na.rm=T) })
+
+        plot(snr[,1], title=titlestr, type="b", xlim=c(t1,t2))
+        plot(pow[,1], title=titlestr, type="b", xlim=c(t1,t2))
+        # }
     }
 }
