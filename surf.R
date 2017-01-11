@@ -10,7 +10,7 @@ surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard.dat.gz"))
     x <- scan(file=file,sep=",", quiet=TRUE, what=list(
             datetime="", channel=1, status="",
             modulation="", id=1, freq=1.0, power=1.0,
-            snr=1.0, corrected=1,uncorrected=1))
+            SNR=1.0, CorrCw=1, UncorrCw=1))
 
     times <- utime(x$datetime,in.format="%Y-%m-%d %H:%M:%S")
     uchans <- unique(x$channel)
@@ -19,11 +19,11 @@ surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard.dat.gz"))
 
     for (chan in uchans) {
         ic <- x$channel == chan
-        dx <- c(x$power[ic],x$snr[ic],
-                x$corrected[ic], x$uncorrected[ic])
+        dx <- c(x$power[ic],x$SNR[ic],
+                x$CorrCw[ic], x$UncorrCw[ic])
         tx <- times[ic]
         xts <- dat(nts(matrix(dx,ncol=4), tx,
-            names=c("power","snr","corr","uncorr"),
+            names=c("power","SNR","CorrCw","UncorrCw"),
             units=c("dBmV","dB","","")))
 
         tsl[chan] <- list(list(ts=xts,freq=unique(x$freq[ic]),
@@ -42,13 +42,15 @@ plotsurf <- function()
     corr <- NULL
     uncorr <- NULL
     for (ic in 1:nc) {
-        corx <- x[[ic]]$ts[-1,"corr"]
-        corx@data <- diff(x[[ic]]$ts[,"corr"]@data)
-        uncorx <- x[[ic]]$ts[-1,"uncorr"]
-        uncorx@data <- diff(x[[ic]]$ts[,"uncorr"]@data)
+
+        corx <- d_by_dt(x[[ic]]$ts[-1,"CorrCw"],dtmax=86400,lag=1,time=1) * 3600
+	units(corx) <- "hr^-1"
+
+        uncorx <- d_by_dt(x[[ic]]$ts[-1,"UncorrCw"],dtmax=86400,lag=1,time=1) * 3600
+	units(uncorx) <- "hr^-1"
 
         nvalx <- corx + uncorx
-        colnames(nvalx) <- "total"
+        colnames(nvalx) <- "CodeWords"
         nval <- Cbind(nval,nvalx)
         corr <- Cbind(corr,corx)
         uncorr <- Cbind(uncorr,uncorx)
@@ -63,7 +65,9 @@ plotsurf <- function()
     t1 <- start(x[[1]]$ts)
     # t1 <- utime("2017 jan 2 05:00")
     t2 <- end(x[[1]]$ts)
+
     for (ic in 1:nc) {
+
         if (!all(is.na(nval[,ic])) && max(nval[,ic],na.rm=TRUE) > 10) {
 
             freq <- x[[ic]]$freq
@@ -76,10 +80,11 @@ plotsurf <- function()
             plot(nval[pos,ic],title=titlestr,type="b",xlim=c(t1,t2),log="y")
 
             pcu <- uncorr[pos,ic] / nval[pos,ic] * 100
+	    colnames(pcu) <- "UncorrCW"
             units(pcu) <- "%"
             plot(pcu,title=titlestr,type="b",xlim=c(t1,t2))
 
-            plot(x[[ic]]$ts[,"snr"],title=titlestr,type="b",xlim=c(t1,t2))
+            plot(x[[ic]]$ts[,"SNR"],title=titlestr,type="b",xlim=c(t1,t2))
             plot(x[[ic]]$ts[,"power"],title=titlestr,type="b",xlim=c(t1,t2))
         }
     }
