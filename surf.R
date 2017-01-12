@@ -117,6 +117,7 @@ plotsurf <- function(ids=NULL)
             ", freq=",freq," ",funits, ", chan #s=",
             paste(chans, collapse=","))
 
+        # make log plot to expand lower values. Plot 0 as 0.1
         zcw  <- !is.na(badcw[,id]) & badcw[,id] == 0
         badcw[zcw,id] <- 0.1
         plot(badcw[,id], title=titlestr, type="b", xlim=c(t1,t2), log="y")

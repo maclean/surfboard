@@ -30,6 +30,7 @@ def getsurf():
 
     if True:
         url = 'http://192.168.100.1/cgi-bin/status'
+        tree = None
         for i in (range(0,3)):
             code = requests.codes.ok
             exc = None
@@ -41,12 +42,12 @@ def getsurf():
                     break
             except Exception as e:
                 exc = e
-                time.sleep(2)
-        if exc:
-            eprint(exc)
-            return
-        if code != requests.codes.ok:
-            eprint("{}, code={}".format(url,code))
+            time.sleep(2)
+        if tree is None:
+            if exc:
+                eprint(exc)
+            if code != requests.codes.ok:
+                eprint("{}, code={}".format(url,code))
             return
     else:
         try:
