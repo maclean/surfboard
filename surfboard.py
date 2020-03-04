@@ -49,23 +49,31 @@ def getsurf():
             'ar_nonce': ar_nonce
         }
 
-        with requests.Session() as s:
-            p = s.post(login_url, data=payload)
-            # print the html returned or something more intelligent to see if it's a successful login page.
-            # print(p.text)
+        try:
+            with requests.Session() as s:
+                p = s.post(login_url, data=payload)
+                # print(p.text)
+                if p.status_code != requests.codes.ok:
+                    eprint("{}, code={}".format(login_url,p.status_code))
 
-            # An authorised request.
-            r = s.get(status_url)
-            s.get(logout_url)
+                # An authorised request.
+                r = s.get(status_url)
+                if r.status_code != requests.codes.ok:
+                    eprint("{}, code={}".format(status_url,r.status_code))
 
-            tree = html.fromstring(r.text)
+                tree = html.fromstring(r.text)
 
-            if tree is None:
-                if exc:
-                    eprint(exc)
-                if code != requests.codes.ok:
-                    eprint("{}, code={}".format(status_url,code))
-                return
+                lo = s.get(logout_url)
+                if lo.status_code != requests.codes.ok:
+                    eprint("{}, code={}".format(logout_url,lo.status_code))
+
+                if tree is None:
+                    eprint("{}, no content, code={}".format(status_url,code))
+                    return
+
+        except Exception as e:
+            eprint(e)
+            return
     else:
         try:
             tree = html.parse('Status.html')
