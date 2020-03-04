@@ -15,7 +15,7 @@
 
 from __future__ import print_function
 
-import sys
+import sys, os
 from lxml import html
 from lxml import etree
 import requests
@@ -37,7 +37,7 @@ def getsurf():
                 passwd = pwdfile.readline().strip()
         except Exception as e:
             eprint(e)
-            return
+            return os.EX_IOERR
 
         login_url = 'http://192.168.100.1/cgi-bin/adv_pwd_cgi'
         status_url = 'http://192.168.100.1/cgi-bin/status'
@@ -69,35 +69,35 @@ def getsurf():
 
                 if tree is None:
                     eprint("{}, no content, code={}".format(status_url,r.status_code))
-                    return
+                    return os.EX_IOERR
 
         except Exception as e:
             eprint(e)
-            return
+            return os.EX_IOERR
     else:
         try:
             tree = html.parse('Status.html')
         except Exception as e:
             eprint(e)
-            return
+            return os.EX_IOERR
     try:
         timeel = tree.xpath('//*[text()=\'Current System Time:\']')
         if not timeel or len(timeel) < 1:
             eprint("Time not found")
-            return
+            return os.EX_IOERR
 
         if timeel[0].tag != 'p':
             timeel = timeel[0].xpath('./ancestor::p')
             if not timeel or len(timeel) < 1:
                 eprint("Time not found")
-                return
+                return os.EX_IOERR
 
         timestr = timeel[0].text_content().encode("UTF-8").decode()
 
         timestr = timestr.split(':', 1)
         if not timestr or len(timestr) != 2:
             eprint("time={}, not parseable".format(timestr))
-            return
+            return os.EX_IOERR
 
         timestr = timestr[1].strip()
         if timestr[0] == '<':
@@ -114,7 +114,7 @@ def getsurf():
             timeval = datetime.datetime.strptime(timestr,'%a %b %d %H:%M:%S %Y')
         except ValueError as e:
             eprint("time={}, not parseable: {}".format(timestr,e))
-            return
+            return os.EX_IOERR
 
         tbls = tree.xpath('//table')
 
@@ -143,8 +143,11 @@ def getsurf():
 
     except etree.XPathEvalError as e:
         eprint('xpath exception={}'.format(e))
-        return
+        return os.EX_IOERR
+
+    return os.EX_OK
 
 if __name__ == '__main__':
-    getsurf()
+    err = getsurf()
+    sys.exit(err)
 
