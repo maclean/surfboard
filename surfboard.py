@@ -68,7 +68,7 @@ def getsurf():
                     eprint("{}, code={}".format(logout_url,lo.status_code))
 
                 if tree is None:
-                    eprint("{}, no content, code={}".format(status_url,code))
+                    eprint("{}, no content, code={}".format(status_url,r.status_code))
                     return
 
         except Exception as e:
