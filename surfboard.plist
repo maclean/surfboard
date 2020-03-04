@@ -4,33 +4,33 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>local.surfboard</string>
+	<string>local.surfboard</string>
     <key>UserName</key>
-    <string>mom_dad</string>
+	<string>mom_dad</string>
     <key>EnvironmentVariables</key>
-    <dict>
-	<key>PATH</key>
-	<string>/bin:/usr/bin:/usr/local/bin</string>
-    </dict>
+	<dict>
+	    <key>PATH</key>
+	    <string>/bin:/usr/bin:/usr/local/bin</string>
+	</dict>
     <key>WorkingDirectory</key>
-    <string>/Users/mom_dad</string>
+	<string>/Users/mom_dad</string>
     <key>StandardErrorPath</key>
-    <string>surfboard.stderr</string>
+	<string>surfboard.stderr</string>
     <key>ProgramArguments</key>
-    <array>
-        <string>/bin/sh</string>
-        <string>-c</string>
-        <string>git/surfboard/surfboard.py 2>> surfboard.err | gzip -c >> surfboard.dat.gz</string>
-    </array>
+	<array>
+	    <string>/bin/sh</string>
+	    <string>-c</string>
+	    <string>git/surfboard/surfboard.py 2>> surfboard.err | gzip -c >> surfboard.dat.gz</string>
+	</array>
     <key>KeepAlive</key>
-    <dict>
-	<key>NetworkState</key>
-	<true/>
-    </dict>
+	<dict>
+	    <key>NetworkState</key>
+		<true/>
+	</dict>
     <key>StartCalendarInterval</key>
-    <dict>
-        <key>Minute</key>
-        <integer>0</integer>
-    </dict>
+	<dict>
+	    <key>Minute</key>
+	    <integer>0</integer>
+	</dict>
 </dict>
 </plist>
