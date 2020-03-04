@@ -1,7 +1,8 @@
 #!/bin/sh
 
-launchctl list | fgrep surfboard
-launchctl stop local.surfboard
-launchctl remove local.surfboard
-launchctl list | fgrep surfboard
+sudo launchctl list | fgrep surfboard
+sudo launchctl stop local.surfboard
+sudo launchctl remove local.surfboard
+sudo launchctl list | fgrep surfboard
+sudo rm /Library/LaunchAgents/surfboard.plist
 
