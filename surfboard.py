@@ -41,6 +41,7 @@ def getsurf():
 
         login_url = 'http://192.168.100.1/cgi-bin/adv_pwd_cgi'
         status_url = 'http://192.168.100.1/cgi-bin/status'
+        logout_url = 'http://192.168.100.1/cgi-bin/status#'
         ar_nonce = '{:08d}'.format(random.randint(0,99999999))
         payload = {
             'username': 'admin',
@@ -55,7 +56,8 @@ def getsurf():
 
             # An authorised request.
             r = s.get(status_url)
-            # print(r.text)
+            s.get(logout_url)
+
             tree = html.fromstring(r.text)
 
             if tree is None:
