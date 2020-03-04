@@ -13,14 +13,14 @@
 	    <string>/bin:/usr/bin:/usr/local/bin</string>
 	</dict>
     <key>WorkingDirectory</key>
-	<string>/Users/mom_dad</string>
+	<string>/Users/mom_dad/surfboard</string>
     <key>StandardErrorPath</key>
-	<string>surfboard.stderr</string>
+	<string>/Users/mom_dad/surfboard/surfboard.stderr</string>
     <key>ProgramArguments</key>
 	<array>
 	    <string>/bin/sh</string>
 	    <string>-c</string>
-	    <string>git/surfboard/surfboard.py 2>> surfboard.err | gzip -c >> surfboard.dat.gz</string>
+	    <string>$HOME/git/surfboard/surfboard.py 2>> surfboard.err | gzip -c >> surfboard.dat.gz</string>
 	</array>
     <key>KeepAlive</key>
 	<dict>

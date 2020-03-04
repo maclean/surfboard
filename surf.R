@@ -6,7 +6,7 @@
 # at http://www.eol.ucar.edu/software/R/, for manipulating
 # and plotting time-series.
 
-surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard.dat.gz"))
+surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.dat.gz"))
 {
     surfd <- scan(file=file,sep=",", quiet=TRUE, what=list(
             datetime="", channel=1, status="",
