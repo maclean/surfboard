@@ -32,34 +32,38 @@ def getsurf():
 
     if True:
 
-        with open('surfboard_password.txt', 'r') as pwdfile:
-            passwd = pwdfile.readline().strip()
+        try: 
+            with open('surfboard_password.txt', 'r') as pwdfile:
+                passwd = pwdfile.readline().strip()
+        except Exception as e:
+            eprint(e)
+            return
 
-            login_url = 'http://192.168.100.1/cgi-bin/adv_pwd_cgi'
-            status_url = 'http://192.168.100.1/cgi-bin/status'
-            ar_nonce = '{:08d}'.format(random.randint(0,99999999))
-            payload = {
-                'username': 'admin',
-                'password': passwd,
-                'ar_nonce': ar_nonce
-            }
+        login_url = 'http://192.168.100.1/cgi-bin/adv_pwd_cgi'
+        status_url = 'http://192.168.100.1/cgi-bin/status'
+        ar_nonce = '{:08d}'.format(random.randint(0,99999999))
+        payload = {
+            'username': 'admin',
+            'password': passwd,
+            'ar_nonce': ar_nonce
+        }
 
-            with requests.Session() as s:
-                p = s.post(login_url, data=payload)
-                # print the html returned or something more intelligent to see if it's a successful login page.
-                # print(p.text)
+        with requests.Session() as s:
+            p = s.post(login_url, data=payload)
+            # print the html returned or something more intelligent to see if it's a successful login page.
+            # print(p.text)
 
-                # An authorised request.
-                r = s.get(status_url)
-                # print(r.text)
-                tree = html.fromstring(r.text)
+            # An authorised request.
+            r = s.get(status_url)
+            # print(r.text)
+            tree = html.fromstring(r.text)
 
-                if tree is None:
-                    if exc:
-                        eprint(exc)
-                    if code != requests.codes.ok:
-                        eprint("{}, code={}".format(status_url,code))
-                    return
+            if tree is None:
+                if exc:
+                    eprint(exc)
+                if code != requests.codes.ok:
+                    eprint("{}, code={}".format(status_url,code))
+                return
     else:
         try:
             tree = html.parse('Status.html')
