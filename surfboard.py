@@ -21,53 +21,80 @@ from lxml import etree
 import requests
 import datetime
 import time
+import random
 
 def eprint(*args, **kwargs):
     print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S:"),
         *args, file=sys.stderr, **kwargs)
 
+
 def getsurf():
 
     if True:
-        url = 'http://192.168.100.1/cgi-bin/status'
-        tree = None
-        for i in (range(0,3)):
-            code = requests.codes.ok
-            exc = None
-            try:
-                page = requests.get(url)
-                code = page.status_code
-                if code == requests.codes.ok:
-                    tree = html.fromstring(page.content)
-                    break
-            except Exception as e:
-                exc = e
-            time.sleep(2)
-        if tree is None:
-            if exc:
-                eprint(exc)
-            if code != requests.codes.ok:
-                eprint("{}, code={}".format(url,code))
-            return
+
+        with open('surfboard_password.txt', 'r') as pwdfile:
+            passwd = pwdfile.readline().strip()
+
+            login_url = 'http://192.168.100.1/cgi-bin/adv_pwd_cgi'
+            status_url = 'http://192.168.100.1/cgi-bin/status'
+            ar_nonce = '{:08d}'.format(random.randint(0,99999999))
+            payload = {
+                'username': 'admin',
+                'password': passwd,
+                'ar_nonce': ar_nonce
+            }
+
+            with requests.Session() as s:
+                p = s.post(login_url, data=payload)
+                # print the html returned or something more intelligent to see if it's a successful login page.
+                # print(p.text)
+
+                # An authorised request.
+                r = s.get(status_url)
+                # print(r.text)
+                tree = html.fromstring(r.text)
+
+                if tree is None:
+                    if exc:
+                        eprint(exc)
+                    if code != requests.codes.ok:
+                        eprint("{}, code={}".format(status_url,code))
+                    return
     else:
         try:
-            tree = html.parse('/tmp/status')
+            tree = html.parse('Status.html')
         except Exception as e:
             eprint(e)
             return
     try:
-        timeel = tree.xpath('//*[text()=\'Current System Time:\']/ancestor::p')
+        timeel = tree.xpath('//*[text()=\'Current System Time:\']')
         if not timeel or len(timeel) < 1:
             eprint("Time not found")
             return
 
+        if timeel[0].tag != 'p':
+            timeel = timeel[0].xpath('./ancestor::p')
+            if not timeel or len(timeel) < 1:
+                eprint("Time not found")
+                return
+
         timestr = timeel[0].text_content().encode("UTF-8").decode()
+
         timestr = timestr.split(':', 1)
         if not timestr or len(timestr) != 2:
             eprint("time={}, not parseable".format(timestr))
             return
 
         timestr = timestr[1].strip()
+        if timestr[0] == '<':
+            timestr = timestr.split('>', 1)
+            if timestr and len(timestr) == 2:
+                timestr = timestr[1].strip()
+
+        ctimestr = timestr.split('<', 1)
+
+        if ctimestr and len(ctimestr) == 2:
+            timestr = ctimestr[0]
 
         try:
             timeval = datetime.datetime.strptime(timestr,'%a %b %d %H:%M:%S %Y')
@@ -75,19 +102,30 @@ def getsurf():
             eprint("time={}, not parseable: {}".format(timestr,e))
             return
 
-        rows = tree.xpath('//*[text()=\'Downstream Bonded Channels\']/ancestor::table/tr[position()>2]')
+        tbls = tree.xpath('//table')
 
-        for row in rows:
-            vals = [col.text_content().encode('UTF-8').decode().strip() for col in row.getchildren()]
-            if len(vals) < 7:
-                eprint("Only {} values in table row".format(len(vals)))
-                continue
+        for tbl in tbls:
+            # look for Downstream Bonded Channels table
+            if tbl.xpath('.//*[contains(text(),"Downstream Bonded Channels")]'):
 
-            vals[4] = vals[4].replace('MHz','').strip()
-            vals[5] = vals[5].replace('dBmV','').strip()
-            vals[6] = vals[6].replace('dB','').strip()
-            vals = [val.replace('----','') for val in vals]
-            print("{0},{1}".format(timeval,','.join(vals)))
+                rows = tbl.getchildren()
+                for row in rows:
+                    # first row has only the "Downstream ..." th
+                    # second row has "Channel" header
+                    tds = row.xpath('./td')
+                    if len(tds) == 0 or tds[0].text_content() == "Channel":
+                        continue
+                            
+                    vals = [col.text_content().encode('UTF-8').decode().strip() for col in tds]
+                    if len(vals) < 7:
+                        eprint("Only {} values in table row".format(len(vals)))
+                        continue
+
+                    vals[4] = vals[4].replace('MHz','').strip()
+                    vals[5] = vals[5].replace('dBmV','').strip()
+                    vals[6] = vals[6].replace('dB','').strip()
+                    vals = [val.replace('----','') for val in vals]
+                    print("{0},{1}".format(timeval,','.join(vals)))
 
     except etree.XPathEvalError as e:
         eprint('xpath exception={}'.format(e))
