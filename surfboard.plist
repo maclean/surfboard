@@ -10,7 +10,7 @@
     <key>EnvironmentVariables</key>
 	<dict>
 	    <key>PATH</key>
-	    <string>/usr/local/bin:/bin:/usr/bin</string>
+	    <string>/usr/local/bin:/bin:/usr/bin:/sbin</string>
 	</dict>
     <key>WorkingDirectory</key>
 	<string>/Users/mom_dad/surfboard</string>
