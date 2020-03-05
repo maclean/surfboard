@@ -110,15 +110,6 @@ def getsurf(ip):
             return os.EX_IOERR
 
         timestr = timestr[1].strip()
-        if timestr[0] == '<':
-            timestr = timestr.split('>', 1)
-            if timestr and len(timestr) == 2:
-                timestr = timestr[1].strip()
-
-        ctimestr = timestr.split('<', 1)
-
-        if ctimestr and len(ctimestr) == 2:
-            timestr = ctimestr[0]
 
         try:
             timeval = datetime.datetime.strptime(timestr,'%a %b %d %H:%M:%S %Y')
