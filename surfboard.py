@@ -28,7 +28,7 @@ def eprint(*args, **kwargs):
         *args, file=sys.stderr, **kwargs)
 
 
-def getsurf():
+def getsurf(ip):
 
     if True:
 
@@ -39,9 +39,9 @@ def getsurf():
             eprint(e)
             return os.EX_IOERR
 
-        login_url = 'http://192.168.100.1/cgi-bin/adv_pwd_cgi'
-        status_url = 'http://192.168.100.1/cgi-bin/status'
-        logout_url = 'http://192.168.100.1/cgi-bin/status#'
+        login_url = 'http://' + ip + '/cgi-bin/adv_pwd_cgi'
+        status_url = 'http://' + ip + '/cgi-bin/status'
+        logout_url = 'http://' + ip + '/cgi-bin/status#'
         ar_nonce = '{:08d}'.format(random.randint(0,99999999))
         payload = {
             'username': 'admin',
@@ -148,6 +148,9 @@ def getsurf():
     return os.EX_OK
 
 if __name__ == '__main__':
-    err = getsurf()
+    ip = "192.168.100.1"
+    if len(sys.argv) > 1:
+        ip = sys.argv[1]
+    err = getsurf(ip)
     sys.exit(err)
 
