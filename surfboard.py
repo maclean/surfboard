@@ -15,7 +15,7 @@
 
 from __future__ import print_function
 
-import sys, os
+import sys, os, subprocess
 from lxml import html
 from lxml import etree
 import requests
@@ -31,6 +31,16 @@ def eprint(*args, **kwargs):
 def getsurf(ip):
 
     if True:
+
+        try:
+            ping = subprocess.run(["ping", "-c", "2", ip],
+                stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL)
+            if ping.returncode != 0:
+                eprint("warning: {} returned {}".format(
+                    ' '.join(ping.args), ping.returncode))
+        except Exception as e:
+            eprint(e)
 
         try: 
             with open('surfboard_password.txt', 'r') as pwdfile:
