@@ -13,8 +13,6 @@
 # The upstream information is not currently extracted, but that could be added.
 # Adding a runstring parameter, down or up, may be the best way to implement that.
 
-from __future__ import print_function
-
 import sys, os, subprocess
 from lxml import html
 from lxml import etree
@@ -30,8 +28,17 @@ def eprint(*args, **kwargs):
 
 def getsurf(ip):
 
-    if True:
+    debugParse = False
 
+    if debugParse:
+        try:
+            tree = html.parse('Status.html')
+        except Exception as e:
+            eprint(e)
+            return os.EX_IOERR
+    else:
+        # Network device may be down due to system sleep.
+        # Try to bring it up with ping
         try:
             ping = subprocess.run(["ping", "-c", "2", ip],
                 stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
@@ -42,6 +49,7 @@ def getsurf(ip):
         except Exception as e:
             eprint(e)
 
+        # read surfboard admin password from file on working directory
         try: 
             with open('surfboard_password.txt', 'r') as pwdfile:
                 passwd = pwdfile.readline().strip()
@@ -53,6 +61,7 @@ def getsurf(ip):
         status_url = 'http://' + ip + '/cgi-bin/status'
         logout_url = 'http://' + ip + '/cgi-bin/status#'
         ar_nonce = '{:08d}'.format(random.randint(0,99999999))
+
         payload = {
             'username': 'admin',
             'password': passwd,
@@ -84,12 +93,7 @@ def getsurf(ip):
         except Exception as e:
             eprint(e)
             return os.EX_IOERR
-    else:
-        try:
-            tree = html.parse('Status.html')
-        except Exception as e:
-            eprint(e)
-            return os.EX_IOERR
+
     try:
         timeel = tree.xpath('//*[text()=\'Current System Time:\']')
         if not timeel or len(timeel) < 1:
