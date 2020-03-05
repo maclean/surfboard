@@ -28,18 +28,43 @@
 		<true/>
 	</dict>
     <key>StartCalendarInterval</key>
-	<dict>
-	    <key>Hour</key>
-	    <array>
-		<integer>0</integer>
-		<integer>4</integer>
-		<integer>8</integer>
-		<integer>12</integer>
-		<integer>16</integer>
-		<integer>20</integer>
-	    </array>
-	    <key>Minute</key>
-		<integer>0</integer>
-	</dict>
+	<array>
+	    <dict>
+		<key>Hour</key>
+		    <integer>0</integer>
+		<key>Minute</key>
+		    <integer>0</integer>
+	    </dict>
+	    <dict>
+		<key>Hour</key>
+		    <integer>4</integer>
+		<key>Minute</key>
+		    <integer>0</integer>
+	    </dict>
+	    <dict>
+		<key>Hour</key>
+		    <integer>8</integer>
+		<key>Minute</key>
+		    <integer>0</integer>
+	    </dict>
+	    <dict>
+		<key>Hour</key>
+		    <integer>12</integer>
+		<key>Minute</key>
+		    <integer>0</integer>
+	    </dict>
+	    <dict>
+		<key>Hour</key>
+		    <integer>16</integer>
+		<key>Minute</key>
+		    <integer>0</integer>
+	    </dict>
+	    <dict>
+		<key>Hour</key>
+		    <integer>20</integer>
+		<key>Minute</key>
+		    <integer>0</integer>
+	    </dict>
+	</array>
 </dict>
 </plist>
