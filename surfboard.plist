@@ -22,11 +22,11 @@
 	    <string>-c</string>
 	    <string>$HOME/git/surfboard/surfboard.py 2>> surfboard.err | gzip -c >> surfboard.dat.gz</string>
 	</array>
-    <key>KeepAlive</key>
-	<dict>
-	    <key>NetworkState</key>
-		<true/>
-	</dict>
+
+    <!-- Note: NetworkState with KeepAlive is no longer supported -->
+
+    <!-- Note: This runs when system wakes from sleep, so it doesn't
+         typically run right on the hour -->
     <key>StartCalendarInterval</key>
 	<array>
 	    <dict>
