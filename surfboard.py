@@ -13,7 +13,7 @@
 # The upstream information is not currently extracted, but that could be added.
 # Adding a runstring parameter, down or up, may be the best way to implement that.
 
-import sys, os, subprocess
+import sys, os, subprocess, getopt
 from lxml import html
 from lxml import etree
 import requests
@@ -26,9 +26,7 @@ def eprint(*args, **kwargs):
         *args, file=sys.stderr, **kwargs)
 
 
-def getsurf(ip):
-
-    debugParse = False
+def getsurf(debugParse, pings, sleepsec, ip):
 
     if debugParse:
         try:
@@ -37,17 +35,22 @@ def getsurf(ip):
             eprint(e)
             return os.EX_IOERR
     else:
-        # Network device may be down due to system sleep.
-        # Try to bring it up with ping
-        try:
-            ping = subprocess.run(["ping", "-c", "2", ip],
-                stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL)
-            if ping.returncode != 0:
-                eprint("warning: {} returned {}".format(
-                    ' '.join(ping.args), ping.returncode))
-        except Exception as e:
-            eprint(e)
+
+        # Wait for network to come up from system sleep
+        if sleepsec > 0:
+            time.sleep(sleepsec)
+
+        # Try to bring it up network device with ping.
+        if pings > 0:
+            try:
+                ping = subprocess.run(["ping", "-c", pings, "-n", ip],
+                    stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL)
+                if ping.returncode != 0:
+                    eprint("warning: {} returned {}".format(
+                        ' '.join(ping.args), ping.returncode))
+            except Exception as e:
+                eprint(e)
 
         # read surfboard admin password from file on working directory
         try: 
@@ -152,10 +155,46 @@ def getsurf(ip):
 
     return os.EX_OK
 
+def Usage(argv0):
+
+    print("{} [-d] [-h] [-p p] [-s s] [ip]\n"
+        "    -d: debug, read Status.html instead of fetching status from surfboard\n"
+        "    -h: help\n"
+        "    -p p: number of pings to send to ip before fetching status\n"
+        "    -s s: how many seconds to sleep before fetching status\n"
+        "    ip: IP address of surfboard".format(argv0), file=sys.stderr)
+
+
 if __name__ == '__main__':
+
+    debugParse = False
     ip = "192.168.100.1"
-    if len(sys.argv) > 1:
-        ip = sys.argv[1]
-    err = getsurf(ip)
+    pings = 0
+
+    # sleeping 2 seconds after waking on a Macbook Air is sufficient for
+    # network to come up
+    sleepsec = 2
+
+    try:
+        opts = getopt.getopt(sys.argv[1:],'dhp:s:')
+        for name, value in opts[0]:
+            if name == '-d':
+                debugParse = True
+            elif name == '-h':
+                Usage(sys.argv[0])
+                sys.exit(1)
+            elif name == '-p':
+                pings = int(value)
+            elif name == '-s':
+                sleepsec = int(value)
+    except (getopt.GetoptError, ValueError) as err:
+        eprint(str(err))
+        Usage(sys.argv[0])
+        sys.exit(os.EX_USAGE)
+
+    if len(opts[1]) > 0:
+        ip = opts[1][0]
+
+    err = getsurf(debugParse, pings, sleepsec, ip)
     sys.exit(err)
 
