@@ -21,12 +21,19 @@ import datetime
 import time
 import random
 
+debugParse = False
+ip = "192.168.100.1"
+pings = 0
+# sleeping 2 seconds after waking on a Macbook Air is sufficient for
+# network to come up
+sleepsec = 2
+
 def eprint(*args, **kwargs):
     print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S:"),
         *args, file=sys.stderr, **kwargs)
 
 
-def getsurf(debugParse, pings, sleepsec, ip):
+def getsurf():
 
     if debugParse:
         try:
@@ -40,10 +47,10 @@ def getsurf(debugParse, pings, sleepsec, ip):
         if sleepsec > 0:
             time.sleep(sleepsec)
 
-        # Try to bring it up network device with ping.
+        # Try to bring up network device with ping.
         if pings > 0:
             try:
-                ping = subprocess.run(["ping", "-c", pings, "-n", ip],
+                ping = subprocess.run(["ping", "-c", str(pings), "-n", ip],
                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL)
                 if ping.returncode != 0:
@@ -157,23 +164,15 @@ def getsurf(debugParse, pings, sleepsec, ip):
 
 def Usage(argv0):
 
-    print("{} [-d] [-h] [-p p] [-s s] [ip]\n"
+    print("{} [-d] [-h] [-p p] [-s s] [IP]\n"
         "    -d: debug, read Status.html instead of fetching status from surfboard\n"
         "    -h: help\n"
-        "    -p p: number of pings to send to ip before fetching status\n"
-        "    -s s: how many seconds to sleep before fetching status\n"
-        "    ip: IP address of surfboard".format(argv0), file=sys.stderr)
+        "    -p p: number of pings to send to ip before fetching status, default: {}\n"
+        "    -s s: how many seconds to sleep before fetching status, default: {}\n"
+        "    IP: address of surfboard, default: {}".format(argv0, pings, sleepsec, ip), file=sys.stderr)
 
 
 if __name__ == '__main__':
-
-    debugParse = False
-    ip = "192.168.100.1"
-    pings = 0
-
-    # sleeping 2 seconds after waking on a Macbook Air is sufficient for
-    # network to come up
-    sleepsec = 2
 
     try:
         opts = getopt.getopt(sys.argv[1:],'dhp:s:')
@@ -195,6 +194,6 @@ if __name__ == '__main__':
     if len(opts[1]) > 0:
         ip = opts[1][0]
 
-    err = getsurf(debugParse, pings, sleepsec, ip)
+    err = getsurf()
     sys.exit(err)
 
