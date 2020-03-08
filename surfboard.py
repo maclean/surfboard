@@ -24,9 +24,9 @@ import random
 debugParse = False
 ip = "192.168.100.1"
 pings = 0
-# sleeping 2 seconds after waking on a Macbook Air is sufficient for
+# sleeping 3 seconds after waking on a Macbook Air is sufficient for
 # network to come up
-sleepsec = 2
+sleepsec = 3
 
 def eprint(*args, **kwargs):
     print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S:"),
@@ -174,6 +174,8 @@ def Usage(argv0):
 
 if __name__ == '__main__':
 
+    err = os.EX_USAGE
+
     try:
         opts = getopt.getopt(sys.argv[1:],'dhp:s:')
         for name, value in opts[0]:
@@ -181,15 +183,15 @@ if __name__ == '__main__':
                 debugParse = True
             elif name == '-h':
                 Usage(sys.argv[0])
-                sys.exit(1)
+                sys.exit(err)
             elif name == '-p':
                 pings = int(value)
             elif name == '-s':
                 sleepsec = int(value)
-    except (getopt.GetoptError, ValueError) as err:
-        eprint(str(err))
+    except (getopt.GetoptError, ValueError) as exc:
+        eprint(str(exc))
         Usage(sys.argv[0])
-        sys.exit(os.EX_USAGE)
+        sys.exit(err)
 
     if len(opts[1]) > 0:
         ip = opts[1][0]
