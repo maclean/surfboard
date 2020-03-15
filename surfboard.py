@@ -24,8 +24,8 @@ import random
 debugParse = False
 ip = "192.168.100.1"
 pings = 0
-# sleeping 3 seconds after waking on a Macbook Air is sufficient for
-# network to come up
+# waiting 3 seconds after being invoked by launchd on a
+# waking Macbook Air is sufficient for network to come up
 sleepsec = 3
 
 def eprint(*args, **kwargs):

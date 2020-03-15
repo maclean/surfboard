@@ -23,7 +23,7 @@ surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.d
     tsl <- list()
 
     for (id in uids) {
-        mx <- surfd$id == id
+        mx <- surfd$id == id & !is.na(times)
         dx <- c(surfd$power[mx],surfd$SNR[mx],
                 surfd$CorrCw[mx], surfd$UncorrCw[mx])
         tx <- times[mx]
