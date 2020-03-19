@@ -80,19 +80,19 @@ def getsurf():
 
         try:
             with requests.Session() as s:
-                p = s.post(login_url, data=payload)
+                p = s.post(login_url, data=payload, timeout=30)
                 # print(p.text)
                 if p.status_code != requests.codes.ok:
                     eprint("{}, code={}".format(login_url,p.status_code))
 
                 # An authorised request.
-                r = s.get(status_url)
+                r = s.get(status_url, timeout=30)
                 if r.status_code != requests.codes.ok:
                     eprint("{}, code={}".format(status_url,r.status_code))
 
                 tree = html.fromstring(r.text)
 
-                lo = s.get(logout_url)
+                lo = s.get(logout_url, timeout=30)
                 if lo.status_code != requests.codes.ok:
                     eprint("{}, code={}".format(logout_url,lo.status_code))
 
