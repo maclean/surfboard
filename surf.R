@@ -37,7 +37,7 @@ surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.d
     tsl
 }
 
-plotsurf <- function(ids=NULL)
+plotsurf <- function(ids=0)
 {
     surfd <- surfboard()
     nid <- length(surfd)
