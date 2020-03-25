@@ -15,15 +15,15 @@ surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.d
 
     times <- utime(surfd$datetime,in.format="%Y-%m-%d %H:%M:%S")
 
-    # The mapping from channel number to channel id has changed from time to time.
-    # It appears that the ids are mapped one-to-one to frequencies,
-    # so we'll use the id as the main key
-    uids <- sort(unique(surfd$id))
+    # The mapping from channel number to channel id is not constant,
+    # nor is the mapping from channel number or channel id to frequency.
+    # Use the frequency as the main key
+    ufreqs <- sort(unique(surfd$freq))
 
     tsl <- list()
 
-    for (id in uids) {
-        mx <- surfd$id == id & !is.na(times)
+    for (freq in ufreqs) {
+        mx <- surfd$freq == freq & !is.na(times)
         dx <- c(surfd$power[mx],surfd$SNR[mx],
                 surfd$CorrCw[mx], surfd$UncorrCw[mx])
         tx <- times[mx]
@@ -31,32 +31,39 @@ surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.d
             names=c("power","SNR","CorrCw","UncorrCw"),
             units=c("dBmV","dB","","")))
 
-        tsl[id] <- list(list(ts=xts, freq=unique(surfd$freq[mx]),
-            channels=unique(surfd$channel[mx]), frequnits="MHz"))
+        tsl[as.character(freq)] <- list(list(ts=xts,
+            channels=unique(surfd$channel[mx]),
+            ids=unique(surfd$id[mx]),
+            frequnits="MHz"))
     }
     tsl
 }
 
-plotsurf <- function(ids=0)
+plotsurf <- function(freqs=0)
 {
     surfd <- surfboard()
-    nid <- length(surfd)
+
+    allfreqs <- as.integer(names(surfd))
+    cat("Frequencies=",paste(allfreqs,collapse=", "),"\n")
 
     alltoo <- FALSE
-    if (is.null(ids)) {
-        ids <- 1:nid
+    if (is.null(freqs)) {
+        freqs <- allfreqs
+        calcfreqs <- freqs
         alltoo <- TRUE
     }
     else {
-        ac <- !is.na(match(ids, 0))
-        if (any(ac)) {
-            ids <- ids[!ac]
+        zf <- !is.na(match(freqs, 0))
+        if (any(zf)) {
+            freqs <- freqs[!zf]
+            calcfreqs <- allfreqs
             alltoo <- TRUE
         }
+        else calcfreqs <- freqs
     }
 
     Sys.setenv(PROJECT="")
-    ask <-  (alltoo + length(ids)) > 1
+    ask <-  (alltoo + length(freqs)) > 1
     par(mfrow=c(2,2))
        
     corr <- NULL
@@ -64,7 +71,8 @@ plotsurf <- function(ids=0)
     snr <- NULL
     pow <- NULL
 
-    for (dx in surfd) {
+    for (freq in calcfreqs) {
+        dx <- surfd[[as.character(freq)]]
 
         # This modem does not report the number of codewords that didn't need correcting,
         # just the number of corrected and the unncorrectables. So we don't actually
@@ -108,34 +116,39 @@ plotsurf <- function(ids=0)
     clip("BadCodeWords", 0.1, 1.e100)
     clip("UncorrCW", 0, 100)
 
-    for (id in ids) {
+    for (freq in freqs) {
 
-        freq <- surfd[[id]]$freq
-        funits <- surfd[[id]]$frequnits
-        chans <- surfd[[id]]$channels
-        titlestr <- paste0("Channel id=",id,
-            ", freq=",freq," ",funits, ", chan #s=",
-            paste(chans, collapse=","))
+        cfreq <- as.character(freq)
+        nfreq <- match(freq, calcfreqs)
+        # browser()
+
+        funits <- surfd[[cfreq]]$frequnits
+        chans <- surfd[[cfreq]]$channels
+        ids <- surfd[[cfreq]]$ids
+        titlestr <- paste0("Freq=", freq, " ", funits,
+            ", ids=", paste(ids,collapse=","),
+            ", channel#=", paste(chans,collapse=","))
 
         # make log plot to expand lower values. Plot 0 as 0.1
-        zcw  <- !is.na(badcw[,id]) & badcw[,id] == 0
-        badcw[zcw,id] <- 0.1
-        plot(badcw[,id], title=titlestr, type="b", xlim=c(t1,t2), log="y")
-        badcw[zcw,id] <- 0
+        zcw  <- !is.na(badcw[,nfreq]) & badcw[,nfreq] == 0
+        badcw[zcw,nfreq] <- 0.1
+        plot(badcw[,nfreq], title=titlestr, type="b", xlim=c(t1,t2), log="y")
+        badcw[zcw,nfreq] <- 0
         par(ask=ask)
 
-        pcu <- uncorr[,id] / badcw[,id] * 100
+        pcu <- uncorr[,nfreq] / badcw[,nfreq] * 100
         colnames(pcu) <- "UncorrCW"
         units(pcu) <- "%"
         plot(pcu,title=titlestr,type="b",xlim=c(t1,t2))
 
-        plot(snr[,id],title=titlestr,type="b",xlim=c(t1,t2))
-        plot(pow[,id],title=titlestr,type="b",xlim=c(t1,t2))
+        plot(snr[,nfreq],title=titlestr,type="b",xlim=c(t1,t2))
+        plot(pow[,nfreq],title=titlestr,type="b",xlim=c(t1,t2))
     }
+    # browser()
 
     if (alltoo) {
-        # Plot total and error %age across all ids
-        titlestr <- "All channels"
+        # Plot total and error %age across all frequencies
+        titlestr <- "All frequencies"
 
         badcw[, 1] <- apply(badcw@data, 1, function(x) { sum(x, na.rm=TRUE) })
         uncorr[, 1] <- apply(uncorr@data, 1, function(x) { sum(x, na.rm=TRUE) })
