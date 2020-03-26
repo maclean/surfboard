@@ -39,9 +39,9 @@ surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.d
     tsl
 }
 
-plotsurf <- function(freqs=0)
+plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.dat.gz"))
 {
-    surfd <- surfboard()
+    surfd <- surfboard(file=file)
 
     allfreqs <- as.integer(names(surfd))
     cat("Frequencies=",paste(allfreqs,collapse=", "),"\n")
@@ -144,7 +144,36 @@ plotsurf <- function(freqs=0)
         plot(snr[,nfreq],title=titlestr,type="b",xlim=c(t1,t2))
         plot(pow[,nfreq],title=titlestr,type="b",xlim=c(t1,t2))
     }
-    # browser()
+
+    # heatmaps of x=time, y=frequency, z=variable. Need legends
+    pcu <- uncorr / badcw * 100
+    colnames(pcu) <- rep("UncorrCW", ncol(pcu))
+    units(pcu) <- rep("%", ncol(pcu))
+
+    tx <- (as.numeric(positions(badcw)) - t1) / 86400
+
+    title <- paste0(unique(colnames(badcw)), " (", unique(units(badcw)),")")
+    image(z=badcw@data, x=tx, y=allfreqs, main=title)
+    title <- paste0(unique(colnames(pcu)), " (", unique(units(pcu)),")")
+    image(z=pcu@data, x=tx, y=allfreqs, main=title)
+
+    tx <- (as.numeric(positions(pow)) - t1) / 86400
+    title <- paste0(unique(colnames(snr)), " (", unique(units(snr)),")")
+    image(z=snr@data, x=tx, y=allfreqs, main=title)
+    title <- paste0(unique(colnames(pow)), " (", unique(units(pow)),")")
+    image(z=pow@data, x=tx, y=allfreqs, main=title)
+    par(ask=TRUE)
+
+    if (FALSE && Sys.getenv("R_GUI_APP_VERSION") != "") {
+        require("plotly")
+        plot_ly(z=t(badcw@data), x=tx, y=allfreqs, type="heatmap")
+        par(ask=TRUE)
+        plot_ly(z=t(pcu@data), x=tx, y=allfreqs, type="heatmap")
+        tx <- (as.numeric(positions(pow)) - t1) / 86400
+        plot_ly(z=t(pow@data), x=tx, y=allfreqs, type="heatmap")
+         plot_ly(z=t(snr@data), x=tx, y=allfreqs, type="heatmap")
+        browser()
+    }
 
     if (alltoo) {
         # Plot total and error %age across all frequencies
@@ -169,6 +198,5 @@ plotsurf <- function(freqs=0)
 
         plot(snr[,1], title=titlestr, type="b", xlim=c(t1,t2))
         plot(pow[,1], title=titlestr, type="b", xlim=c(t1,t2))
-        # }
     }
 }
