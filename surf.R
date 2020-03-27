@@ -39,11 +39,11 @@ surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.d
     tsl
 }
 
-plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.dat.gz"))
+plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.dat.gz"), palate="Heat", ncolors=10)
 {
     surfd <- surfboard(file=file)
 
-    allfreqs <- as.integer(names(surfd))
+    allfreqs <- sort(as.integer(names(surfd)))
     cat("Frequencies=",paste(allfreqs,collapse=", "),"\n")
 
     alltoo <- FALSE
@@ -53,6 +53,7 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
         alltoo <- TRUE
     }
     else {
+        freqs <- sort(freqs)
         zf <- !is.na(match(freqs, 0))
         if (any(zf)) {
             freqs <- freqs[!zf]
@@ -63,7 +64,7 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
     }
 
     Sys.setenv(PROJECT="")
-    ask <-  (alltoo + length(freqs)) > 1
+    ask <- TRUE || (alltoo + length(freqs)) > 1
     par(mfrow=c(2,2))
        
     corr <- NULL
@@ -134,7 +135,6 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
         badcw[zcw,nfreq] <- 0.1
         plot(badcw[,nfreq], title=titlestr, type="b", xlim=c(t1,t2), log="y")
         badcw[zcw,nfreq] <- 0
-        par(ask=ask)
 
         pcu <- uncorr[,nfreq] / badcw[,nfreq] * 100
         colnames(pcu) <- "UncorrCW"
@@ -143,31 +143,38 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
 
         plot(snr[,nfreq],title=titlestr,type="b",xlim=c(t1,t2))
         plot(pow[,nfreq],title=titlestr,type="b",xlim=c(t1,t2))
+
+        par(ask=ask)
     }
 
-    # heatmaps of x=time, y=frequency, z=variable. Need legends
+    # heatmaps of x=time, y=frequency, z=variable.
+    # Need legends, time scale on X
     pcu <- uncorr / badcw * 100
     colnames(pcu) <- rep("UncorrCW", ncol(pcu))
     units(pcu) <- rep("%", ncol(pcu))
 
+    colors <- hcl.colors(ncolors, palate, rev=TRUE)
+
     tx <- (as.numeric(positions(badcw)) - t1) / 86400
 
     title <- paste0(unique(colnames(badcw)), " (", unique(units(badcw)),")")
-    image(z=badcw@data, x=tx, y=allfreqs, main=title)
+    image(z=badcw@data, x=tx, y=allfreqs, col=colors, ylab="MHz", main=title)
+
     title <- paste0(unique(colnames(pcu)), " (", unique(units(pcu)),")")
-    image(z=pcu@data, x=tx, y=allfreqs, main=title)
+    image(z=pcu@data, x=tx, y=allfreqs, col=colors, ylab="MHz", main=title)
 
     tx <- (as.numeric(positions(pow)) - t1) / 86400
     title <- paste0(unique(colnames(snr)), " (", unique(units(snr)),")")
-    image(z=snr@data, x=tx, y=allfreqs, main=title)
+    image(z=snr@data, x=tx, y=allfreqs, col=colors, ylab="MHz", main=title)
+
     title <- paste0(unique(colnames(pow)), " (", unique(units(pow)),")")
-    image(z=pow@data, x=tx, y=allfreqs, main=title)
-    par(ask=TRUE)
+    image(z=pow@data, x=tx, y=allfreqs, col=colors, ylab="MHz", main=title)
+
+    par(ask=ask)
 
     if (FALSE && Sys.getenv("R_GUI_APP_VERSION") != "") {
         require("plotly")
         plot_ly(z=t(badcw@data), x=tx, y=allfreqs, type="heatmap")
-        par(ask=TRUE)
         plot_ly(z=t(pcu@data), x=tx, y=allfreqs, type="heatmap")
         tx <- (as.numeric(positions(pow)) - t1) / 86400
         plot_ly(z=t(pow@data), x=tx, y=allfreqs, type="heatmap")
