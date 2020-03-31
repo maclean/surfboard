@@ -167,7 +167,7 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
     title <- paste0(unique(colnames(badcw)), " (", unique(units(badcw)),")")
     image(z=badcw@data, x=tx-t1, y=allfreqs, col=colors, ylab="MHz",
         main=title, xaxt="n", xlab="")
-    browser()
+    # browser()
     timeaxis(1, time.zone=badcw@time.zone)
     timeaxis(3, labels=FALSE, time.zone=badcw@time.zone)
 
