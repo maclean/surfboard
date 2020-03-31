@@ -137,6 +137,7 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
         badcw[zcw,nfreq] <- 0
 
         pcu <- uncorr[,nfreq] / badcw[,nfreq] * 100
+        pcu[zcw,] <- 0
         colnames(pcu) <- "UncorrCW"
         units(pcu) <- "%"
         plot(pcu,title=titlestr,type="b",xlim=c(t1,t2))
@@ -150,25 +151,44 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
     # heatmaps of x=time, y=frequency, z=variable.
     # Need legends, time scale on X
     pcu <- uncorr / badcw * 100
+    zcw <- !is.na(badcw) & badcw == 0.
+    pcu[zcw,] <- 0
     colnames(pcu) <- rep("UncorrCW", ncol(pcu))
     units(pcu) <- rep("%", ncol(pcu))
 
     colors <- hcl.colors(ncolors, palate, rev=TRUE)
 
-    tx <- (as.numeric(positions(badcw)) - t1) / 86400
+    tx <- positions(badcw)
+    t1 <- tx[1]
+    t2 <- tx[length(tx)]
+
+    timeaxis_setup(t1,t2)
 
     title <- paste0(unique(colnames(badcw)), " (", unique(units(badcw)),")")
-    image(z=badcw@data, x=tx, y=allfreqs, col=colors, ylab="MHz", main=title)
+    image(z=badcw@data, x=tx-t1, y=allfreqs, col=colors, ylab="MHz",
+        main=title, xaxt="n", xlab="")
+    browser()
+    timeaxis(1, time.zone=badcw@time.zone)
+    timeaxis(3, labels=FALSE, time.zone=badcw@time.zone)
 
     title <- paste0(unique(colnames(pcu)), " (", unique(units(pcu)),")")
-    image(z=pcu@data, x=tx, y=allfreqs, col=colors, ylab="MHz", main=title)
+    image(z=pcu@data, x=tx-t1, y=allfreqs, col=colors, ylab="MHz", main=title, xaxt="n", xlab="")
+    timeaxis(1, time.zone=badcw@time.zone)
+    timeaxis(3, labels=FALSE, time.zone=badcw@time.zone)
 
-    tx <- (as.numeric(positions(pow)) - t1) / 86400
+    tx <- positions(snr)
+    t1 <- tx[1]
+    t2 <- tx[length(tx)]
+    tscale <- t2 - t1
     title <- paste0(unique(colnames(snr)), " (", unique(units(snr)),")")
-    image(z=snr@data, x=tx, y=allfreqs, col=colors, ylab="MHz", main=title)
+    image(z=snr@data, x=tx - t1, y=allfreqs, col=colors, ylab="MHz", main=title, xaxt="n", xlab="")
+    timeaxis(1, time.zone=badcw@time.zone, date.too=TRUE)
+    timeaxis(3, labels=FALSE, time.zone=badcw@time.zone)
 
     title <- paste0(unique(colnames(pow)), " (", unique(units(pow)),")")
-    image(z=pow@data, x=tx, y=allfreqs, col=colors, ylab="MHz", main=title)
+    image(z=pow@data, x=tx - t1, y=allfreqs, col=colors, ylab="MHz", main=title, xaxt="n", xlab="")
+    timeaxis(1, time.zone=badcw@time.zone, date.too=TRUE)
+    timeaxis(3, labels=FALSE, time.zone=badcw@time.zone)
 
     par(ask=ask)
 
@@ -196,6 +216,8 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
         badcw[zcw,1] <- 0
 
         pcu <- uncorr[,1] / badcw[,1] * 100
+        zcw <- !is.na(badcw[,1]) & badcw[,1] == 0.
+        pcu[zcw,] <- 0
         colnames(pcu) <- "UncorrCW"
         units(pcu) <- "%"
         plot(pcu,title=titlestr,type="b",xlim=c(t1,t2))
