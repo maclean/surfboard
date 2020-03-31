@@ -63,8 +63,15 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
         else calcfreqs <- freqs
     }
 
+    # create two gragphics windows
+    if (is.null(dev.list())) {
+        getOption("device")()
+        getOption("device")()
+    }
+
+
     Sys.setenv(PROJECT="")
-    ask <- TRUE || (alltoo + length(freqs)) > 1
+    ask <- (alltoo + length(freqs)) > 1
     par(mfrow=c(2,2))
        
     corr <- NULL
@@ -156,6 +163,7 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
     colnames(pcu) <- rep("UncorrCW", ncol(pcu))
     units(pcu) <- rep("%", ncol(pcu))
 
+
     colors <- hcl.colors(ncolors, palate, rev=TRUE)
 
     tx <- positions(badcw)
@@ -190,7 +198,12 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
     timeaxis(1, time.zone=badcw@time.zone, date.too=TRUE)
     timeaxis(3, labels=FALSE, time.zone=badcw@time.zone)
 
-    par(ask=ask)
+    # par(ask=ask)
+
+    if (length(dev.list()) == 2) {
+        dev.set(dev.next())
+        par(mfrow=c(2,2))
+    }
 
     if (FALSE && Sys.getenv("R_GUI_APP_VERSION") != "") {
         require("plotly")
