@@ -6,14 +6,15 @@
 # at http://www.eol.ucar.edu/software/R/, for manipulating
 # and plotting time-series.
 
-surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.dat.gz"))
+surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.dat.gz"), modemtz="MST")
 {
     surfd <- scan(file=file,sep=",", quiet=TRUE, what=list(
             datetime="", channel=1, status="",
             modulation="", id=1, freq=1.0, power=1.0,
             SNR=1.0, CorrCw=1, UncorrCw=1))
 
-    times <- utime(surfd$datetime,in.format="%Y-%m-%d %H:%M:%S")
+    times <- utime(surfd$datetime,in.format="%Y-%m-%d %H:%M:%S",
+        time.zone=modemtz)
 
     # The mapping from channel number to channel id is not constant,
     # nor is the mapping from channel number or channel id to frequency.
@@ -39,9 +40,13 @@ surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.d
     tsl
 }
 
-plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.dat.gz"), palate="Heat", ncolors=10)
+plotsurf <- function(freqs=0,
+    file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.dat.gz"),
+    palate="Heat", ncolors=10, modemtz="MST")
 {
-    surfd <- surfboard(file=file)
+    # not really important, but time on the modem is standard time,
+    # not adjusted for daylight savings time
+    surfd <- surfboard(file=file, modemtz=modemtz)
 
     allfreqs <- sort(as.integer(names(surfd)))
     cat("Frequencies=",paste(allfreqs,collapse=", "),"\n")
@@ -72,7 +77,7 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
 
     Sys.setenv(PROJECT="")
     ask <- (alltoo + length(freqs)) > 1
-    par(mfrow=c(2,2))
+    par(mfrow=c(4,1))
        
     corr <- NULL
     uncorr <- NULL
@@ -204,7 +209,7 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
 
     if (length(dev.list()) == 2) {
         dev.set(dev.next())
-        par(mfrow=c(2,2))
+        par(mfrow=c(4,1))
     }
 
     if (FALSE && Sys.getenv("R_GUI_APP_VERSION") != "") {
