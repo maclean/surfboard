@@ -79,6 +79,8 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
     snr <- NULL
     pow <- NULL
 
+    logbad <- FALSE
+
     for (freq in calcfreqs) {
         dx <- surfd[[as.character(freq)]]
 
@@ -128,7 +130,6 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
 
         cfreq <- as.character(freq)
         nfreq <- match(freq, calcfreqs)
-        # browser()
 
         funits <- surfd[[cfreq]]$frequnits
         chans <- surfd[[cfreq]]$channels
@@ -137,11 +138,14 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
             ", ids=", paste(ids,collapse=","),
             ", channel#=", paste(chans,collapse=","))
 
-        # make log plot to expand lower values. Plot 0 as 0.1
-        zcw  <- !is.na(badcw[,nfreq]) & badcw[,nfreq] == 0
-        badcw[zcw,nfreq] <- 0.1
-        plot(badcw[,nfreq], title=titlestr, type="b", xlim=c(t1,t2), log="y")
-        badcw[zcw,nfreq] <- 0
+        if (logbad) {
+            # make log plot to expand lower values. Plot 0 as 0.1
+            zcw  <- !is.na(badcw[,nfreq]) & badcw[,nfreq] == 0
+            badcw[zcw,nfreq] <- 0.1
+        }
+        plot(badcw[,nfreq], title=titlestr, type="b", xlim=c(t1,t2),
+            log=ifelse(logbad,"y",""))
+        if (logbad) badcw[zcw,nfreq] <- 0
 
         pcu <- uncorr[,nfreq] / badcw[,nfreq] * 100
         pcu[zcw,] <- 0
@@ -159,10 +163,9 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
     # Need legends, time scale on X
     pcu <- uncorr / badcw * 100
     zcw <- !is.na(badcw) & badcw == 0.
-    pcu[zcw,] <- 0
+    pcu[zcw] <- 0
     colnames(pcu) <- rep("UncorrCW", ncol(pcu))
     units(pcu) <- rep("%", ncol(pcu))
-
 
     colors <- hcl.colors(ncolors, palate, rev=TRUE)
 
@@ -175,12 +178,11 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
     title <- paste0(unique(colnames(badcw)), " (", unique(units(badcw)),")")
     image(z=badcw@data, x=tx-t1, y=allfreqs, col=colors, ylab="MHz",
         main=title, xaxt="n", xlab="")
-    # browser()
     timeaxis(1, time.zone=badcw@time.zone)
     timeaxis(3, labels=FALSE, time.zone=badcw@time.zone)
 
     title <- paste0(unique(colnames(pcu)), " (", unique(units(pcu)),")")
-    image(z=pcu@data, x=tx-t1, y=allfreqs, col=colors, ylab="MHz", main=title, xaxt="n", xlab="")
+    image(z=pcu@data, x=tx-t1, y=allfreqs, zlim=c(0,100), col=colors, ylab="MHz", main=title, xaxt="n", xlab="")
     timeaxis(1, time.zone=badcw@time.zone)
     timeaxis(3, labels=FALSE, time.zone=badcw@time.zone)
 
@@ -212,7 +214,6 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
         tx <- (as.numeric(positions(pow)) - t1) / 86400
         plot_ly(z=t(pow@data), x=tx, y=allfreqs, type="heatmap")
          plot_ly(z=t(snr@data), x=tx, y=allfreqs, type="heatmap")
-        browser()
     }
 
     if (alltoo) {
@@ -222,11 +223,14 @@ plotsurf <- function(freqs=0,file=file.path(Sys.getenv("HOME"),"surfboard","surf
         badcw[, 1] <- apply(badcw@data, 1, function(x) { sum(x, na.rm=TRUE) })
         uncorr[, 1] <- apply(uncorr@data, 1, function(x) { sum(x, na.rm=TRUE) })
 
-        # make log plot to expand lower values. Plot 0 as 0.1
-        zcw  <- !is.na(badcw[,1]) & badcw[,1] == 0
-        badcw[zcw,1] <- 0.1
-        plot(badcw[,1], title=titlestr,type="b",xlim=c(t1,t2),log="y")
-        badcw[zcw,1] <- 0
+        if (logbad) {
+            # make log plot to expand lower values. Plot 0 as 0.1
+            zcw  <- !is.na(badcw[,1]) & badcw[,1] == 0
+            badcw[zcw,1] <- 0.1
+        }
+        plot(badcw[,1], title=titlestr,type="b",xlim=c(t1,t2),
+            log=ifelse(logbad,"y",""))
+        if (logbad) badcw[zcw,1] <- 0
 
         pcu <- uncorr[,1] / badcw[,1] * 100
         zcw <- !is.na(badcw[,1]) & badcw[,1] == 0.
