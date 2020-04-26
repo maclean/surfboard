@@ -151,8 +151,8 @@ plotsurf <- function(freqs=0,
             # make log plot to expand lower values. Plot 0 as 0.1
             badcw[zcw,nfreq] <- 0.1
         }
-        plot(badcw[,nfreq], type="b", xlim=c(t1,t2),
-            log=ifelse(logbad,"y",""))
+
+        plot(badcw[,nfreq], type="b", xlim=c(t1,t2), log=ifelse(logbad,"y",""))
         if (!do_dat) {
             timeaxis(3, labels=TRUE, time.zone=badcw@time.zone, date.too=FALSE,
                 xlab=FALSE)
@@ -165,29 +165,29 @@ plotsurf <- function(freqs=0,
         pcu[zcw,] <- 0
         colnames(pcu) <- "UncorrCW"
         units(pcu) <- "%"
+
         plot(pcu,type="b",xlim=c(t1,t2))
         if (!do_dat) {
-            timeaxis(3, labels=FALSE, time.zone=badcw@time.zone, date.too=FALSE,
+            timeaxis(3, labels=FALSE, time.zone=pcu@time.zone, date.too=FALSE,
                 xlab=FALSE)
             axis(4)
         }
 
         plot(snr[,nfreq],type="b",xlim=c(t1,t2))
         if (!do_dat) {
-            timeaxis(3, labels=FALSE, time.zone=badcw@time.zone, date.too=FALSE,
+            timeaxis(3, labels=FALSE, time.zone=snr@time.zone, date.too=FALSE,
                 xlab=FALSE)
             axis(4)
         }
 
         if (!do_dat) {
             plot(pow[,nfreq],type="b",xlim=c(t1,t2))
-            timeaxis(3, labels=FALSE, time.zone=badcw@time.zone, date.too=FALSE,
+            timeaxis(3, labels=FALSE, time.zone=pow@time.zone, date.too=FALSE,
                 xlab=FALSE)
             axis(4)
             title(main=titlestr, line=-par("cex.main"), outer=TRUE)
         }
         else plot(pow[,nfreq],type="b",xlim=c(t1,t2), title=titlestr)
-
 
         par(ask=ask)
     }
@@ -279,8 +279,8 @@ plotsurf <- function(freqs=0,
             zcw  <- !is.na(badcw[,1]) & badcw[,1] == 0
             badcw[zcw,1] <- 0.1
         }
-        plot(badcw[,1], type="b",xlim=c(t1,t2),
-            log=ifelse(logbad,"y",""))
+
+        plot(badcw[,1], type="b",xlim=c(t1,t2), log=ifelse(logbad,"y",""))
         if (!do_dat) {
             timeaxis(3, time.zone=badcw@time.zone, date.too=FALSE, xlab=FALSE)
             axis(side=4)
@@ -292,6 +292,7 @@ plotsurf <- function(freqs=0,
         pcu[zcw,] <- 0
         colnames(pcu) <- "UncorrCW"
         units(pcu) <- "%"
+
         plot(pcu, type="b",xlim=c(t1,t2))
         if (!do_dat) {
             timeaxis(3, labels=FALSE, time.zone=badcw@time.zone, date.too=FALSE)
@@ -309,6 +310,7 @@ plotsurf <- function(freqs=0,
         pow@data[,1] <- apply(pow, 1, function(x) { mean(x, na.rm=T) })
 
         titlestr <- "All frequencies"
+
         plot(pow[,1], type="b", xlim=c(t1,t2))
         if (!do_dat) {
             timeaxis(3, labels=FALSE, time.zone=badcw@time.zone, date.too=FALSE)
