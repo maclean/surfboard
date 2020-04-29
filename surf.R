@@ -250,6 +250,7 @@ plotsurf <- function(freqs=0,
     timeaxis(3, labels=FALSE, time.zone=badcw@time.zone)
     axis(side=4)
     mtext(title, side=3, line=0.5, cex=0.8)
+    logo_stamp()
 
     # par(ask=ask)
 
@@ -316,6 +317,7 @@ plotsurf <- function(freqs=0,
             timeaxis(3, labels=FALSE, time.zone=badcw@time.zone, date.too=FALSE)
             axis(side=4)
             title(main=titlestr, line=-par("cex.main"), outer=TRUE)
+            logo_stamp()
         }
     }
     invisible(NULL)
