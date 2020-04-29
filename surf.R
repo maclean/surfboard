@@ -318,4 +318,5 @@ plotsurf <- function(freqs=0,
             title(main=titlestr, line=-par("cex.main"), outer=TRUE)
         }
     }
+    invisible(NULL)
 }
