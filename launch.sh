@@ -1,8 +1,10 @@
 #!/bin/sh
 
-sudo cp surfboard.plist /Library/LaunchDaemons
+which=$1
 
-sudo launchctl load /Library/LaunchDaemons/surfboard.plist
+sudo cp $which.plist /Library/LaunchDaemons
 
-sudo launchctl list | fgrep surfboard
+sudo launchctl load /Library/LaunchDaemons/$which.plist
+
+sudo launchctl list | fgrep $which
 

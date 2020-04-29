@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+	<string>local.plotsurf</string>
+    <key>UserName</key>
+	<string>mom_dad</string>
+    <key>EnvironmentVariables</key>
+	<dict>
+	    <key>PATH</key>
+	    <string>/usr/local/bin:/bin:/usr/bin</string>
+	</dict>
+    <key>WorkingDirectory</key>
+	<string>/Users/mom_dad/surfboard</string>
+    <key>StandardErrorPath</key>
+	<string>/Users/mom_dad/surfboard/plotsurf.stderr</string>
+    <key>ProgramArguments</key>
+	<array>
+	    <string>/bin/sh</string>
+	    <string>-c</string>
+	    <string>$HOME/git/surfboard/plotsurf.sh 2>> plotsurf.err</string>
+	</array>
+
+    <key>StartCalendarInterval</key>
+	<array>
+	    <dict>
+		<key>Hour</key>
+		    <integer>1</integer>
+		<key>Minute</key>
+		    <integer>0</integer>
+	    </dict>
+	</array>
+</dict>
+</plist>
