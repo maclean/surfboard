@@ -69,7 +69,7 @@ plotsurf <- function(freqs=0,
         else calcfreqs <- freqs
     }
 
-    # create two gragphics windows
+    # create two graphics windows
     if (is.null(dev.list())) {
         getOption("device")()
         getOption("device")()

@@ -7,8 +7,7 @@ out=$(mktemp /tmp/plotsurf_XXXXXX)
 trap '{ rm $in $out; }' EXIT
 
 cat > $in<< EOD
-png(file="$HOME/surfboard/plotsurf1.png")
-png(file="$HOME/surfboard/plotsurf2.png")
+pdf(file="$HOME/surfboard/plotsurf.pdf", onefile=TRUE)
 err <- tryCatch(plotsurf(), error = function(e) e)
 
 status <- 0
