@@ -23,15 +23,20 @@ import random
 
 debugParse = False
 ip = "192.168.100.1"
+
+# Wait some time after being invoked by launchd. 3 or 4 seconds
+# on a waking Macbook Air is usually sufficient for the ethernet
+# to come up
+sleepsec = 4
+
+# How many pings to send before sending http request.
+# Some of this extra trouble may be required because
+# Energy-Efficient Ethernet is enabled on the modem.
 pings = 0
-# waiting 3 seconds after being invoked by launchd on a
-# waking Macbook Air is sufficient for network to come up
-sleepsec = 3
 
 def eprint(*args, **kwargs):
     print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S:"),
         *args, file=sys.stderr, **kwargs)
-
 
 def getsurf():
 
@@ -50,7 +55,7 @@ def getsurf():
         # Try to bring up network device with ping.
         if pings > 0:
             try:
-                ping = subprocess.run(["ping", "-c", str(pings), "-n", ip],
+                ping = subprocess.run(["ping", "-i", "2", "-c", str(pings), "-n", ip],
                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL)
                 if ping.returncode != 0:

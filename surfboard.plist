@@ -20,7 +20,7 @@
 	<array>
 	    <string>/bin/sh</string>
 	    <string>-c</string>
-	    <string>$HOME/git/surfboard/surfboard.py 2>> surfboard.err | gzip -c >> surfboard.dat.gz</string>
+	    <string>$HOME/git/surfboard/surfboard.py -p 2 2>> surfboard.err | gzip -c >> surfboard.dat.gz</string>
 	</array>
 
     <!-- Note: NetworkState with KeepAlive is no longer supported -->
