@@ -7,7 +7,8 @@ out=$(mktemp /tmp/plotsurf_XXXXXX)
 trap '{ rm $in $out; }' EXIT
 
 cat > $in<< EOD
-pdf(file="$HOME/surfboard/surfboard_$(date +%Y).pdf", onefile=TRUE)
+pdf(file="$HOME/surfboard/surfboard_$(date +%Y).pdf", onefile=TRUE,
+	title="Surfboard Status")
 err <- tryCatch(plotsurf(), error = function(e) e)
 
 status <- 0

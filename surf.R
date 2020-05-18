@@ -43,7 +43,7 @@ surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.d
 
 plotsurf <- function(freqs=0,
     file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.dat.gz"),
-    palate="Heat", ncolors=10, modemtz="MST", logbad=FALSE, do_dat=FALSE)
+    palate="Heat", ncolors=10, modemtz="MST", logerr=FALSE, do_dat=FALSE)
 {
     # not really important, but time on the modem is standard time,
     # not adjusted for daylight savings time
@@ -80,36 +80,43 @@ plotsurf <- function(freqs=0,
     ask <- (alltoo + length(freqs)) > 1
     par(mfrow=c(4,1))
        
-    corr <- NULL
-    uncorr <- NULL
+    # According to a May 2016 post on dslreports.com from telcodad:
+    # Your modem inspects every packet on its cable segment to check which codewords
+    # are addressed to it. This number of packets is expressed as "Total Unerrored Codewords.'"
+    # "Corrected" are the number of those codewords that were corrected using FEC.
+    # "Uncorrectables" are the number of codewords that were so corrupted that your modem
+    # couldn't correct, and therefore had to request the CMTS to resend to them.
+    # Those are the ones to be most concerned about.
+
+    # The status page does not report the number of total unerrored codewords.
+    # So we don't actually know the number of errors (successful or failed corrections)
+    # as a percentage of the total number of codewords.
+
+    # We'll track the sum of the corrected and uncorrectables as a rate per hour, and the
+    # percentage of uncorrectables in the sum.
+
+    corr <- NULL    # rate (per hour) of codewords that were corrected
+    uncorr <- NULL  # rate (per hour) of uncorrectable codewords
     snr <- NULL
     pow <- NULL
-
 
     for (freq in calcfreqs) {
         dx <- surfd[[as.character(freq)]]
 
-        # This modem does not report the number of codewords that didn't need correcting,
-        # just the number of corrected and the unncorrectables. So we don't actually
-        # know the number of successful or failed corrections as a percentage of the
-        # total number of codewords.
-
-        # rate (per hour) of codewords that were corrected
-        # cat('class(dx$ts[,"CorrCw"]=', class(dx$ts[,"CorrCw"]),"\n")
+        # compute rate from the successive differences in the sum of correctables
+        # d_by_dt returns per second, convert to per hour
         corx <- d_by_dt(dx$ts[,"CorrCw"],dtmax=86400,lag=1,time=1) * 3600
-        # cat("class(corx)=", class(corx), "\n")
         units(corx) <- "hr-1"
         corr <- Cbind(corr,corx)
 
-        # rate (per hour) of uncorrectable codewords
         uncorx <- d_by_dt(dx$ts[,"UncorrCw"],dtmax=86400,lag=1,time=1) * 3600
-        # cat("class(uncorx)=", class(uncorx), "\n")
         units(uncorx) <- "hr-1"
         uncorr <- Cbind(uncorr,uncorx)
 
         snr <- Cbind(snr, dx$ts[,"SNR"])
         pow <- Cbind(pow, dx$ts[,"power"])
     }
+
     # look for modem restarts when the successive difference of
     # correctables or uncorrectables are negative.
     restart <- nts(apply(corr@data,1,function(x) { any(!is.na(x) & x < 0)}),
@@ -123,16 +130,16 @@ plotsurf <- function(freqs=0,
     }
         
     # total rate of codewords that needed correction
-    badcw <- corr + uncorr
-    colnames(badcw) <- rep("BadCodeWords", ncol(badcw))
-    units(badcw) <- rep("hr-1", ncol(badcw))
+    cwerr <- corr + uncorr
+    colnames(cwerr) <- rep("CodeWordErrors", ncol(cwerr))
+    units(cwerr) <- rep("hr-1", ncol(cwerr))
 
     t1 <- start(snr)
     # t1 <- utime("2017 jan 2 05:00")
     t2 <- end(snr)
 
-    clip("BadCodeWords", 0.1, 1.e100)
-    clip("UncorrCW", 0, 100)
+    # clip("CodeWordErrors", 0.1, 1.e100)
+    # clip("UncorrCW", 0, 100)
 
     for (freq in freqs) {
 
@@ -146,22 +153,22 @@ plotsurf <- function(freqs=0,
             ", ids=", paste(ids,collapse=","),
             ", channel#=", paste(chans,collapse=","))
 
-        zcw  <- !is.na(badcw[,nfreq]) & badcw[,nfreq] == 0
-        if (logbad) {
+        zcw  <- !is.na(cwerr[,nfreq]) & cwerr[,nfreq] == 0
+        if (logerr) {
             # make log plot to expand lower values. Plot 0 as 0.1
-            badcw[zcw,nfreq] <- 0.1
+            cwerr[zcw,nfreq] <- 0.1
         }
 
-        plot(badcw[,nfreq], type="b", xlim=c(t1,t2), log=ifelse(logbad,"y",""))
+        plot(cwerr[,nfreq], type="b", xlim=c(t1,t2), log=ifelse(logerr,"y",""))
         if (!do_dat) {
-            timeaxis(3, labels=TRUE, time.zone=badcw@time.zone, date.too=FALSE,
+            timeaxis(3, labels=TRUE, time.zone=cwerr@time.zone, date.too=FALSE,
                 xlab=FALSE)
             axis(4)
         }
 
-        if (logbad) badcw[zcw,nfreq] <- 0
+        if (logerr) cwerr[zcw,nfreq] <- 0
 
-        pcu <- uncorr[,nfreq] / badcw[,nfreq] * 100
+        pcu <- uncorr[,nfreq] / cwerr[,nfreq] * 100
         pcu[zcw,] <- 0
         colnames(pcu) <- "UncorrCW"
         units(pcu) <- "%"
@@ -196,26 +203,26 @@ plotsurf <- function(freqs=0,
 
     # heatmaps of x=time, y=frequency, z=variable.
     # Need legends, time scale on X
-    pcu <- uncorr / badcw * 100
-    zcw <- !is.na(badcw) & badcw == 0.
+    pcu <- uncorr / cwerr * 100
+    zcw <- !is.na(cwerr) & cwerr == 0.
     pcu[zcw] <- 0
     colnames(pcu) <- rep("UncorrCW", ncol(pcu))
     units(pcu) <- rep("%", ncol(pcu))
 
     colors <- hcl.colors(ncolors, palate, rev=TRUE)
 
-    tx <- positions(badcw)
+    tx <- positions(cwerr)
     t1 <- tx[1]
     t2 <- tx[length(tx)]
 
     timeaxis_setup(t1,t2)
     # par(mgp=c(1.7,0.7,0))
 
-    title <- paste0(unique(colnames(badcw)), " (", unique(units(badcw)),")")
-    image(z=badcw@data, x=tx-t1, y=allfreqs, col=colors,
+    title <- paste0(unique(colnames(cwerr)), " (", unique(units(cwerr)),")")
+    image(z=cwerr@data, x=tx-t1, y=allfreqs, col=colors,
         ylab="MHz", xaxt="n", xlab="")
-    timeaxis(1, labels=FALSE, time.zone=badcw@time.zone)
-    timeaxis(3, labels=TRUE, time.zone=badcw@time.zone, date.too=FALSE,
+    timeaxis(1, labels=FALSE, time.zone=cwerr@time.zone)
+    timeaxis(3, labels=TRUE, time.zone=cwerr@time.zone, date.too=FALSE,
         xlab=FALSE)
     axis(side=4)
     mtext(title, side=3, line=1.5, cex=0.8)
@@ -224,8 +231,8 @@ plotsurf <- function(freqs=0,
     set_plot_margins()
     image(z=pcu@data, x=tx-t1, y=allfreqs, zlim=c(0,100), col=colors,
         ylab="MHz", xaxt="n", xlab="")
-    timeaxis(1, labels=FALSE, time.zone=badcw@time.zone)
-    timeaxis(3, labels=FALSE, time.zone=badcw@time.zone)
+    timeaxis(1, labels=FALSE, time.zone=cwerr@time.zone)
+    timeaxis(3, labels=FALSE, time.zone=cwerr@time.zone)
     axis(side=4)
     mtext(title, side=3, line=0.5, cex=0.8)
 
@@ -237,8 +244,8 @@ plotsurf <- function(freqs=0,
     set_plot_margins()
     image(z=snr@data, x=tx - t1, y=allfreqs, col=colors,
         ylab="MHz", xaxt="n", xlab="")
-    timeaxis(1, labels=FALSE, time.zone=badcw@time.zone)
-    timeaxis(3, labels=FALSE, time.zone=badcw@time.zone)
+    timeaxis(1, labels=FALSE, time.zone=cwerr@time.zone)
+    timeaxis(3, labels=FALSE, time.zone=cwerr@time.zone)
     axis(side=4)
     mtext(title, side=3, line=0.5, cex=0.8)
 
@@ -246,8 +253,8 @@ plotsurf <- function(freqs=0,
     set_plot_margins()
     image(z=pow@data, x=tx - t1, y=allfreqs, col=colors,
         ylab="MHz", xaxt="n", xlab="")
-    timeaxis(1, time.zone=badcw@time.zone, date.too=TRUE)
-    timeaxis(3, labels=FALSE, time.zone=badcw@time.zone)
+    timeaxis(1, time.zone=cwerr@time.zone, date.too=TRUE)
+    timeaxis(3, labels=FALSE, time.zone=cwerr@time.zone)
     axis(side=4)
     mtext(title, side=3, line=0.5, cex=0.8)
     logo_stamp()
@@ -261,7 +268,7 @@ plotsurf <- function(freqs=0,
 
     if (FALSE && Sys.getenv("R_GUI_APP_VERSION") != "") {
         require("plotly")
-        plot_ly(z=t(badcw@data), x=tx, y=allfreqs, type="heatmap")
+        plot_ly(z=t(cwerr@data), x=tx, y=allfreqs, type="heatmap")
         plot_ly(z=t(pcu@data), x=tx, y=allfreqs, type="heatmap")
         tx <- (as.numeric(positions(pow)) - t1) / 86400
         plot_ly(z=t(pow@data), x=tx, y=allfreqs, type="heatmap")
@@ -272,31 +279,31 @@ plotsurf <- function(freqs=0,
         # Plot total and error %age across all frequencies
         titlestr <- NULL
 
-        badcw[, 1] <- apply(badcw@data, 1, function(x) { sum(x, na.rm=TRUE) })
+        cwerr[, 1] <- apply(cwerr@data, 1, function(x) { sum(x, na.rm=TRUE) })
         uncorr[, 1] <- apply(uncorr@data, 1, function(x) { sum(x, na.rm=TRUE) })
 
-        if (logbad) {
+        if (logerr) {
             # make log plot to expand lower values. Plot 0 as 0.1
-            zcw  <- !is.na(badcw[,1]) & badcw[,1] == 0
-            badcw[zcw,1] <- 0.1
+            zcw  <- !is.na(cwerr[,1]) & cwerr[,1] == 0
+            cwerr[zcw,1] <- 0.1
         }
 
-        plot(badcw[,1], type="b",xlim=c(t1,t2), log=ifelse(logbad,"y",""))
+        plot(cwerr[,1], type="b",xlim=c(t1,t2), log=ifelse(logerr,"y",""))
         if (!do_dat) {
-            timeaxis(3, time.zone=badcw@time.zone, date.too=FALSE, xlab=FALSE)
+            timeaxis(3, time.zone=cwerr@time.zone, date.too=FALSE, xlab=FALSE)
             axis(side=4)
         }
-        if (logbad) badcw[zcw,1] <- 0
+        if (logerr) cwerr[zcw,1] <- 0
 
-        pcu <- uncorr[,1] / badcw[,1] * 100
-        zcw <- !is.na(badcw[,1]) & badcw[,1] == 0.
+        pcu <- uncorr[,1] / cwerr[,1] * 100
+        zcw <- !is.na(cwerr[,1]) & cwerr[,1] == 0.
         pcu[zcw,] <- 0
         colnames(pcu) <- "UncorrCW"
         units(pcu) <- "%"
 
         plot(pcu, type="b",xlim=c(t1,t2))
         if (!do_dat) {
-            timeaxis(3, labels=FALSE, time.zone=badcw@time.zone, date.too=FALSE)
+            timeaxis(3, labels=FALSE, time.zone=cwerr@time.zone, date.too=FALSE)
             axis(side=4)
         }
 
@@ -304,7 +311,7 @@ plotsurf <- function(freqs=0,
 
         plot(snr[,1], type="b", xlim=c(t1,t2))
         if (!do_dat) {
-            timeaxis(3, labels=FALSE, time.zone=badcw@time.zone, date.too=FALSE)
+            timeaxis(3, labels=FALSE, time.zone=cwerr@time.zone, date.too=FALSE)
             axis(side=4)
         }
 
@@ -314,7 +321,7 @@ plotsurf <- function(freqs=0,
 
         plot(pow[,1], type="b", xlim=c(t1,t2))
         if (!do_dat) {
-            timeaxis(3, labels=FALSE, time.zone=badcw@time.zone, date.too=FALSE)
+            timeaxis(3, labels=FALSE, time.zone=cwerr@time.zone, date.too=FALSE)
             axis(side=4)
             title(main=titlestr, line=-par("cex.main"), outer=TRUE)
             logo_stamp()
