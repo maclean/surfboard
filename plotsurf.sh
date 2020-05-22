@@ -9,7 +9,7 @@ trap '{ rm $in $out; }' EXIT
 cat > $in<< EOD
 pdf(file="$HOME/surfboard/surfboard_$(date +%Y).pdf", onefile=TRUE,
 	title="Surfboard Status")
-err <- tryCatch(plotsurf(), error = function(e) e)
+err <- tryCatch(plotsurf(logerr=TRUE), error = function(e) e)
 
 status <- 0
 if (is(err, "error")) {
