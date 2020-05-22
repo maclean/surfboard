@@ -158,8 +158,9 @@ plotsurf <- function(freqs=0,
             # make log plot to expand lower values. Plot 0 as 0.1
             cwerr[zcw,nfreq] <- 0.1
         }
+        plot(cwerr[,nfreq], type="b", xlim=c(t1,t2),
+            log=if (logerr) "y" else "")
 
-        plot(cwerr[,nfreq], type="b", xlim=c(t1,t2), log=ifelse(logerr,"y",""))
         if (!do_dat) {
             timeaxis(3, labels=TRUE, time.zone=cwerr@time.zone, date.too=FALSE,
                 xlab=FALSE)
@@ -216,16 +217,24 @@ plotsurf <- function(freqs=0,
     t2 <- tx[length(tx)]
 
     timeaxis_setup(t1,t2)
-    # par(mgp=c(1.7,0.7,0))
 
-    title <- paste0(unique(colnames(cwerr)), " (", unique(units(cwerr)),")")
-    image(z=cwerr@data, x=tx-t1, y=allfreqs, col=colors,
-        ylab="MHz", xaxt="n", xlab="")
+    title <- paste0(if (logerr) "log10 " else "",
+        unique(colnames(cwerr)), " (", unique(units(cwerr)),")")
+    if (logerr) {
+        # make log plot to expand lower values. Plot 0 as 0.1
+        zcw  <- !is.na(cwerr) & cwerr == 0
+        cwerr[zcw] <- 0.1
+    }
+
+    image(z=if(logerr) log10(cwerr@data) else cwerr@data, x=tx-t1,
+        y=allfreqs, col=colors, ylab="MHz", xaxt="n", xlab="")
+
     timeaxis(1, labels=FALSE, time.zone=cwerr@time.zone)
     timeaxis(3, labels=TRUE, time.zone=cwerr@time.zone, date.too=FALSE,
         xlab=FALSE)
     axis(side=4)
     mtext(title, side=3, line=1.5, cex=0.8)
+    if (logerr) cwerr[zcw] <- 0
 
     title <- paste0(unique(colnames(pcu)), " (", unique(units(pcu)),")")
     set_plot_margins()
@@ -287,8 +296,8 @@ plotsurf <- function(freqs=0,
             zcw  <- !is.na(cwerr[,1]) & cwerr[,1] == 0
             cwerr[zcw,1] <- 0.1
         }
+        plot(cwerr[,1], type="b",xlim=c(t1,t2), log=if(logerr) "y" else "")
 
-        plot(cwerr[,1], type="b",xlim=c(t1,t2), log=ifelse(logerr,"y",""))
         if (!do_dat) {
             timeaxis(3, time.zone=cwerr@time.zone, date.too=FALSE, xlab=FALSE)
             axis(side=4)
