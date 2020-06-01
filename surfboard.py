@@ -33,6 +33,8 @@ sleepsec = 4
 # Some of this extra trouble may be required because
 # Energy-Efficient Ethernet is enabled on the modem.
 pings = 0
+# How long to wait between pings, -i option to ping
+pingwait = 1
 
 def eprint(*args, **kwargs):
     print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S:"),
@@ -55,7 +57,7 @@ def getsurf():
         # Try to bring up network device with ping.
         if pings > 0:
             try:
-                ping = subprocess.run(["ping", "-i", "2", "-c", str(pings), "-n", ip],
+                ping = subprocess.run(["ping", "-i", str(pingwait), "-c", str(pings), "-n", ip],
                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL)
                 if ping.returncode != 0:
@@ -169,12 +171,13 @@ def getsurf():
 
 def Usage(argv0):
 
-    print("{} [-d] [-h] [-p p] [-s s] [IP]\n"
+    print("{} [-d] [-h] [-i i] [-p p] [-s s] [IP]\n"
         "    -d: debug, read Status.html instead of fetching status from surfboard\n"
         "    -h: help\n"
+        "    -i i: seconds to wait between pings, -i ping option, default: {}\n"
         "    -p p: number of pings to send to ip before fetching status, default: {}\n"
         "    -s s: how many seconds to sleep before fetching status, default: {}\n"
-        "    IP: address of surfboard, default: {}".format(argv0, pings, sleepsec, ip), file=sys.stderr)
+        "    IP: address of surfboard, default: {}".format(argv0, pingwait, pings, sleepsec, ip), file=sys.stderr)
 
 
 if __name__ == '__main__':
@@ -182,13 +185,15 @@ if __name__ == '__main__':
     err = os.EX_USAGE
 
     try:
-        opts = getopt.getopt(sys.argv[1:],'dhp:s:')
+        opts = getopt.getopt(sys.argv[1:],'dhi:p:s:')
         for name, value in opts[0]:
             if name == '-d':
                 debugParse = True
             elif name == '-h':
                 Usage(sys.argv[0])
                 sys.exit(err)
+            elif name == '-i':
+                pingwait = int(value)
             elif name == '-p':
                 pings = int(value)
             elif name == '-s':
