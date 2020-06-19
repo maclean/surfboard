@@ -9,24 +9,22 @@
 	<string>$USER</string>
     <key>EnvironmentVariables</key>
 	<dict>
-	    <key>GITHOME</key>
-	    <string>$HOME/git</string>
 	    <!-- add /sbin to PATH for /sbin/ping -->
 	    <key>PATH</key>
 	    <string>/usr/local/bin:/bin:/usr/bin:/sbin</string>
 	    <!-- IP address of surfboard -->
 	    <key>SURF_IP</key>
-	    <string>192.168.100.1</string>
+	    <string>$SURF_IP</string>
 	</dict>
     <key>WorkingDirectory</key>
-	<string>$HOME/surfboard</string>
+	<string>$SURFDIR</string>
     <key>StandardErrorPath</key>
-	<string>$HOME/surfboard/surfboard.stderr</string>
+	<string>$SURFDIR/surfboard.stderr</string>
     <key>ProgramArguments</key>
 	<array>
 	    <string>/bin/sh</string>
 	    <string>-c</string>
-	    <string>$GITHOME/surfboard/surfboard.py -p 2 -i 3 $SURF_IP 2>> surfboard.err | gzip -c >> surfboard.dat.gz</string>
+	    <string>$SURFPATH/surfboard.py -p 2 -i 3 $SURF_IP 2>> surfboard.err | gzip -c >> surfboard.dat.gz</string>
 	</array>
 
     <!-- Note: NetworkState with KeepAlive is no longer supported -->

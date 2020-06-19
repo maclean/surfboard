@@ -9,20 +9,18 @@
 	<string>$USER</string>
     <key>EnvironmentVariables</key>
 	<dict>
-	    <key>GITHOME</key>
-	    <string>$HOME/git</string>
 	    <key>PATH</key>
 	    <string>/usr/local/bin:/bin:/usr/bin</string>
 	</dict>
     <key>WorkingDirectory</key>
-	<string>$HOME/surfboard</string>
+	<string>$SURFDIR</string>
     <key>StandardErrorPath</key>
-	<string>$HOME/surfboard/plotsurf.stderr</string>
+	<string>$SURFDIR/plotsurf.stderr</string>
     <key>ProgramArguments</key>
 	<array>
 	    <string>/bin/sh</string>
 	    <string>-c</string>
-	    <string>$GITHOME/surfboard/plotsurf.sh 2>> plotsurf.err</string>
+	    <string>$SURFPATH/plotsurf.sh 2>> plotsurf.err</string>
 	</array>
 
     <key>StartCalendarInterval</key>
