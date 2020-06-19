@@ -34,3 +34,22 @@ Run launch.sh from the git repository to schedule the python script to run from 
     surfboard/launch.sh surfboard
 
 Compressed data will be written to surfboard.dat.gz in the surfboard directory.
+
+## R setup for macOS
+
+Install R from https://cran.r-project.org/bin/macosx/.
+
+Then, from a terminal window, install required packages
+
+    R --vanilla
+    options(repos=c("http://cran.us.r-project.org","https://archive.eol.ucar.edu/software/R"))
+    install.packages(c("splusTimeDate","gWidgets2","splusTimeSeries", "quantreg", "maps", "Rcpp", "RUnit"))
+    install.packages(c("eolts","isfs"))
+
+Compile surfboard/surf.R in R:
+
+    R --vanilla --slave --restore --save -e 'source("surfboard/surf.R")'
+
+Schedule plotsurf to run every night
+
+    surfboard/launch.sh plotsurf
