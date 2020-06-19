@@ -46,9 +46,13 @@ echo "SURFDIR=$SURFDIR"
 echo "SURFPATH=$SURFPATH"
 echo "SURF_IP=$SURF_IP"
 
-sed -e s/\$USER/$USER/ -e s,\$SURFDIR,$SURFDIR, -e s,\$SURFPATH,$SURFPATH, -e s/\$SURF_IP/$SURF_IP/ $which.plist > /tmp/$which.plist
+tmpfile=$(mktemp)
+trap 'rm -f $tmpfile;' EXIT
+# echo $tmpfile
 
-sudo cp /tmp/$which.plist /Library/LaunchDaemons
+sed -e s/\$USER/$USER/ -e s,\$SURFDIR,$SURFDIR, -e s,\$SURFPATH,$SURFPATH, -e s/\$SURF_IP/$SURF_IP/ $which.plist > $tmpfile
+
+sudo cp $tmpfile /Library/LaunchDaemons/$which.plist
 
 sudo launchctl load /Library/LaunchDaemons/$which.plist
 
