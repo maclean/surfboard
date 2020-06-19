@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Install a user plist file in launchd, substituting some
-# environment variables first
+# Substitute some environment variables in a plist file, then
+# load it into launchd
 
 if [ $# -lt 1 ]; then
     echo "Usage: $0 whichplist"
@@ -11,6 +11,9 @@ fi
 
 which=$1
 
+cd "$(dirname "$0")"
+SURFPATH="$(pwd -P)"
+
 if [ ! -f $which.plist ]; then
     echo "$which.plist does not exist"
     exit 1
@@ -18,7 +21,7 @@ fi
 
 SURFDIR=${SURFDIR:=$HOME/surfboard}
 if [ ! -d $SURFDIR ]; then
-    echo "$SURFDIR directory does not exist. Create, or set SURFDIR appropriately"
+    echo "$SURFDIR directory does not exist. Create it, or set SURFDIR to the path"
     exit 1
 fi
 
@@ -33,12 +36,6 @@ if [ $(stat -L -f %Op $PASSWD) != "100600" ]; then
     chmod 0600 $PASSWD
 fi
 
-SURFPATH="$(cd "$(dirname "$0")" && pwd -P)"
-if [ ! -d $SURFPATH ]; then
-    echo "$SURFPATH does not exist. Set SURFPATH appropriately"
-    exit 1
-fi
-
 SURF_IP=${SURF_IP:=192.168.100.1}
 
 echo "USER=$USER"
@@ -48,7 +45,6 @@ echo "SURF_IP=$SURF_IP"
 
 tmpfile=$(mktemp)
 trap 'rm -f $tmpfile;' EXIT
-# echo $tmpfile
 
 sed -e s/\$USER/$USER/ -e s,\$SURFDIR,$SURFDIR, -e s,\$SURFPATH,$SURFPATH, -e s/\$SURF_IP/$SURF_IP/ $which.plist > $tmpfile
 

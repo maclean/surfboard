@@ -11,7 +11,7 @@ If the surfboard directory is other than $HOME/surfboard, set SURFDIR environmen
 
     export SURFDIR=/somewhere
 
-Create a surfboard password file with only user read/write permission on the surfboard data directory.
+Create a surfboard password file with only user read/write permission on the surfboard directory.
 
     touch surfboard_password.txt
     chmod 0600 surfboard_password.txt
