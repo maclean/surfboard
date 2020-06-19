@@ -6,21 +6,23 @@
     <key>Label</key>
 	<string>local.plotsurf</string>
     <key>UserName</key>
-	<string>mom_dad</string>
+	<string>$USER</string>
     <key>EnvironmentVariables</key>
 	<dict>
+	    <key>GITHOME</key>
+	    <string>$HOME/git</string>
 	    <key>PATH</key>
 	    <string>/usr/local/bin:/bin:/usr/bin</string>
 	</dict>
     <key>WorkingDirectory</key>
-	<string>/Users/mom_dad/surfboard</string>
+	<string>$HOME/surfboard</string>
     <key>StandardErrorPath</key>
-	<string>/Users/mom_dad/surfboard/plotsurf.stderr</string>
+	<string>$HOME/surfboard/plotsurf.stderr</string>
     <key>ProgramArguments</key>
 	<array>
 	    <string>/bin/sh</string>
 	    <string>-c</string>
-	    <string>$HOME/git/surfboard/plotsurf.sh 2>> plotsurf.err</string>
+	    <string>$GITHOME/surfboard/plotsurf.sh 2>> plotsurf.err</string>
 	</array>
 
     <key>StartCalendarInterval</key>

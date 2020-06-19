@@ -6,21 +6,22 @@
     <key>Label</key>
 	<string>local.surfboard</string>
     <key>UserName</key>
-	<string>mom_dad</string>
+	<string>$USER</string>
     <key>EnvironmentVariables</key>
 	<dict>
 	    <key>GITHOME</key>
-	    <string>/Users/mom_dad/git</string>
+	    <string>$HOME/git</string>
 	    <!-- add /sbin to PATH for /sbin/ping -->
 	    <key>PATH</key>
 	    <string>/usr/local/bin:/bin:/usr/bin:/sbin</string>
+	    <!-- IP address of surfboard -->
 	    <key>SURF_IP</key>
 	    <string>192.168.100.1</string>
 	</dict>
     <key>WorkingDirectory</key>
-	<string>/Users/mom_dad/surfboard</string>
+	<string>$HOME/surfboard</string>
     <key>StandardErrorPath</key>
-	<string>/Users/mom_dad/surfboard/surfboard.stderr</string>
+	<string>$HOME/surfboard/surfboard.stderr</string>
     <key>ProgramArguments</key>
 	<array>
 	    <string>/bin/sh</string>
