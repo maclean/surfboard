@@ -2,6 +2,21 @@
 Extract info from status page of Arris Surfboard SB6190 cable modem
 
 ## Setup for macOS
+
+### Install python3 and lxml module
+
+python3 is part of the macOS developer tools. If it isn't fully installed, run it to bring up a dialog to install the developer tools:
+
+    /usr/bin/python3 --version
+
+Or download and install it from https://www.python.org/downloads/mac-osx/, which will put it on /usr/local/bin.
+
+Then install lxml module
+
+    sudo -H python3 -m pip install --upgrade pip
+    python3 -m pip install lxml
+
+### surfboard.py
 From a terminal window, create a surfboard directory, for example, on $HOME.
 
     mkdir $HOME/surfboard
@@ -35,7 +50,7 @@ Run launch.sh from the git repository to schedule the python script to run from 
 
 Compressed data will be written to surfboard.dat.gz in the surfboard directory.
 
-## R setup for macOS
+### R setup for macOS
 
 Install R from https://cran.r-project.org/bin/macosx/.
 
