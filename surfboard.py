@@ -57,7 +57,7 @@ def getsurf():
         # Try to bring up network device with ping.
         if pings > 0:
             try:
-                ping = subprocess.run(["ping", "-i", str(pingwait), "-c", str(pings), "-n", ip],
+                ping = subprocess.run(["ping", "-o", "-q", "-i", str(pingwait), "-c", str(pings), "-n", ip],
                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL)
                 if ping.returncode != 0:

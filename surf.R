@@ -43,7 +43,7 @@ surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.d
 
 plotsurf <- function(freqs=0,
     file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.dat.gz"),
-    palate="Heat", ncolors=10, modemtz="MST", logerr=FALSE, do_dat=FALSE)
+    palette="Heat", ncolors=10, modemtz="MST", logerr=FALSE, do_dat=FALSE)
 {
     # not really important, but time on the modem is standard time,
     # not adjusted for daylight savings time
@@ -210,7 +210,7 @@ plotsurf <- function(freqs=0,
     colnames(pcu) <- rep("UncorrCW", ncol(pcu))
     units(pcu) <- rep("%", ncol(pcu))
 
-    colors <- hcl.colors(ncolors, palate, rev=TRUE)
+    colors <- hcl.colors(ncolors, palette, rev=TRUE)
 
     tx <- positions(cwerr)
     t1 <- tx[1]
