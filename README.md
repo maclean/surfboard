@@ -11,10 +11,11 @@ python3 is part of the macOS developer tools. If it isn't fully installed, run i
 
 Or download and install it from https://www.python.org/downloads/mac-osx/, which will put it on /usr/local/bin.
 
-Then install lxml module
+Then install the lxml and requests modules
 
     sudo -H python3 -m pip install --upgrade pip
     python3 -m pip install lxml
+    python3 -m pip install requests
 
 ### surfboard.py
 From a terminal window, create a surfboard directory, for example, on $HOME.
