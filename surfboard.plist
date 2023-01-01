@@ -24,7 +24,7 @@
 	<array>
 	    <string>/bin/sh</string>
 	    <string>-c</string>
-	    <string>$SURFPATH/surfboard.py -p 2 -i 3 $SURF_IP 2>> surfboard.err | gzip -c >> surfboard.dat.gz</string>
+	    <string>$SURFPATH/surfboard.py -p 2 -i 3 $SURF_IP 2> /tmp/surfboard.err | gzip -c >> surfboard.dat.gz; cat /tmp/surfboard.err >> surfboard.err</string>
 	</array>
 
     <!-- Note: NetworkState with KeepAlive is no longer supported -->

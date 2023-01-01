@@ -8,7 +8,8 @@ out=$(mktemp /tmp/plotsurf_XXXXXX)
 
 trap '{ rm $in $out; }' EXIT
 
-pdf=$HOME/surfboard/surfboard_$(date +%Y).pdf
+# pdf=$HOME/surfboard/surfboard_$(date +%Y).pdf
+pdf=$HOME/surfboard/surfboard.pdf
 
 cat > $in << EOD
 pdf(file="$pdf", onefile=TRUE, title="Surfboard Status")
@@ -31,4 +32,5 @@ R --slave --no-save CMD BATCH $in $out
 # Copy plots to router. Use ping to wakeup network if necessary
 ping -q -o -c 4 openwrt.lan > $out 2>&1 || cat $out 1>&2
 
-scp $pdf openwrt.lan:/www/surfboard 1>&2
+scp $pdf /tmp/surfboard.err openwrt.lan:/www/surfboard 1>&2
+
