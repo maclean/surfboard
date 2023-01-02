@@ -15,12 +15,12 @@
     <key>WorkingDirectory</key>
 	<string>$SURFDIR</string>
     <key>StandardErrorPath</key>
-	<string>$SURFDIR/plotsurf.stderr</string>
+	<string>$SURFDIR/plotsurf_plist_err.log</string>
     <key>ProgramArguments</key>
 	<array>
 	    <string>/bin/sh</string>
 	    <string>-c</string>
-	    <string>$SURFPATH/plotsurf.sh 2>> plotsurf.err</string>
+	    <string>$SURFPATH/plotsurf.sh 2>> plotsurf_err.log</string>
 	</array>
 
     <key>StartCalendarInterval</key>

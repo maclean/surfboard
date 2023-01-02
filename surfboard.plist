@@ -19,12 +19,12 @@
     <key>WorkingDirectory</key>
 	<string>$SURFDIR</string>
     <key>StandardErrorPath</key>
-	<string>$SURFDIR/surfboard.stderr</string>
+	<string>$SURFDIR/surfboard_plist_err.log</string>
     <key>ProgramArguments</key>
 	<array>
 	    <string>/bin/sh</string>
 	    <string>-c</string>
-	    <string>$SURFPATH/surfboard.py -p 2 -i 3 $SURF_IP 2> /tmp/surfboard.err | gzip -c >> surfboard.dat.gz; cat /tmp/surfboard.err >> surfboard.err</string>
+	    <string>$SURFPATH/surfboard.py -p 2 -i 3 $SURF_IP 2> /tmp/surfboard_err.log | gzip -c >> surfboard.dat.gz; cat /tmp/surfboard_err.log >> surfboard_err.log</string>
 	</array>
 
     <!-- Note: NetworkState with KeepAlive is no longer supported -->
