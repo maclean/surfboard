@@ -20,7 +20,7 @@
 	<array>
 	    <string>/bin/sh</string>
 	    <string>-c</string>
-	    <string>$SURFPATH/plotsurf.sh 2>> plotsurf_err.log</string>
+	    <string>$SURFPATH/plotsurf.sh 2>> /tmp/plotsurf_err.log</string>
 	</array>
 
     <key>StartCalendarInterval</key>

@@ -32,5 +32,5 @@ R --slave --no-save CMD BATCH $in $out
 # Copy plots to router. Use ping to wakeup network if necessary
 ping -q -o -c 4 openwrt.lan > $out 2>&1 || cat $out 1>&2
 
-scp $pdf /tmp/surfboard_err.log openwrt.lan:/www/surfboard 1>&2
+scp $pdf /tmp/surfboard_err.log /tmp/plotsurf_err.log openwrt.lan:/www/surfboard 1>&2
 
