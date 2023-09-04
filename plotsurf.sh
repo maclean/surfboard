@@ -13,7 +13,7 @@ pdf=$HOME/surfboard/surfboard.pdf
 
 cat > $in << EOD
 pdf(file="$pdf", onefile=TRUE, title="Surfboard Status")
-err <- tryCatch(plotsurf(logerr=TRUE), error = function(e) e)
+err <- tryCatch(plotsurf(log10err=TRUE), error = function(e) e)
 
 status <- 0
 if (is(err, "error")) {
