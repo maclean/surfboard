@@ -12,19 +12,22 @@ surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.d
             datetime="", channel=1, status="",
             modulation="", id=1, freq=1.0, power=1.0,
             SNR=1.0, CorrCw=1, UncorrCw=1))
+    locked <- surfd$status == "Locked"
 
     times <- utime(surfd$datetime,in.format="%Y-%m-%d %H:%M:%S",
         time.zone=modemtz)
 
+    tfilt <- utime("2000 jan 1 00:00")
+
     # The mapping from channel number to channel id is not constant,
     # nor is the mapping from channel number or channel id to frequency.
     # Use the frequency as the main key
-    ufreqs <- sort(unique(surfd$freq))
+    ufreqs <- sort(unique(surfd$freq[locked]))
 
     tsl <- list()
 
     for (freq in ufreqs) {
-        mx <- surfd$freq == freq & !is.na(times)
+        mx <- locked & surfd$freq == freq & !is.na(times) & times > tfilt
         dx <- c(surfd$power[mx],surfd$SNR[mx],
                 surfd$CorrCw[mx], surfd$UncorrCw[mx])
         tx <- times[mx]
@@ -43,7 +46,7 @@ surfboard <- function(file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.d
 
 plotsurf <- function(freqs=0,
     file=file.path(Sys.getenv("HOME"),"surfboard","surfboard.dat.gz"),
-    palette="Heat", ncolors=10, modemtz="MST", logerr=FALSE, do_dat=FALSE)
+    palette="Heat", ncolors=10, modemtz="MST", log10err=FALSE, do_dat=FALSE)
 {
     # not really important, but time on the modem is standard time,
     # not adjusted for daylight savings time
@@ -106,15 +109,18 @@ plotsurf <- function(freqs=0,
         # compute rate from the successive differences in the sum of correctables
         # d_by_dt returns per second, convert to per hour
         corx <- d_by_dt(dx$ts[,"CorrCw"],dtmax=86400,lag=1,time=1) * 3600
+        uncorx <- d_by_dt(dx$ts[,"UncorrCw"],dtmax=86400,lag=1,time=1) * 3600
+
         units(corx) <- "hr-1"
         corr <- Cbind(corr,corx)
 
-        uncorx <- d_by_dt(dx$ts[,"UncorrCw"],dtmax=86400,lag=1,time=1) * 3600
         units(uncorx) <- "hr-1"
         uncorr <- Cbind(uncorr,uncorx)
 
         snr <- Cbind(snr, dx$ts[,"SNR"])
         pow <- Cbind(pow, dx$ts[,"power"])
+        #cat("freq=",freq,", t1 snr=", format(positions(snr[1,])), "\n")
+        # browser()
     }
 
     # look for modem restarts when the successive difference of
@@ -154,12 +160,12 @@ plotsurf <- function(freqs=0,
             ", channel#=", paste(chans,collapse=","))
 
         zcw  <- !is.na(cwerr[,nfreq]) & cwerr[,nfreq] == 0
-        if (logerr) {
+        if (log10err) {
             # make log plot to expand lower values. Plot 0 as 0.1
             cwerr[zcw,nfreq] <- 0.1
         }
         plot(cwerr[,nfreq], type="b", xlim=c(t1,t2),
-            log=if (logerr) "y" else "")
+            log=if (log10err) "y" else "")
 
         if (!do_dat) {
             timeaxis(3, labels=TRUE, time.zone=cwerr@time.zone, date.too=FALSE,
@@ -167,7 +173,7 @@ plotsurf <- function(freqs=0,
             axis(4)
         }
 
-        if (logerr) cwerr[zcw,nfreq] <- 0
+        if (log10err) cwerr[zcw,nfreq] <- 0
 
         pcu <- uncorr[,nfreq] / cwerr[,nfreq] * 100
         pcu[zcw,] <- 0
@@ -218,15 +224,15 @@ plotsurf <- function(freqs=0,
 
     timeaxis_setup(t1,t2)
 
-    title <- paste0(if (logerr) "log10 " else "",
+    title <- paste0(if (log10err) "log10 " else "",
         unique(colnames(cwerr)), " (", unique(units(cwerr)),")")
-    if (logerr) {
+    if (log10err) {
         # make log plot to expand lower values. Plot 0 as 0.1
         zcw  <- !is.na(cwerr) & cwerr == 0
         cwerr[zcw] <- 0.1
     }
 
-    image(z=if(logerr) log10(cwerr@data) else cwerr@data, x=tx-t1,
+    image(z=if(log10err) log10(cwerr@data) else cwerr@data, x=tx-t1,
         y=allfreqs, col=colors, ylab="MHz", xaxt="n", xlab="")
 
     timeaxis(1, labels=FALSE, time.zone=cwerr@time.zone)
@@ -234,7 +240,7 @@ plotsurf <- function(freqs=0,
         xlab=FALSE)
     axis(side=4)
     mtext(title, side=3, line=1.5, cex=0.8)
-    if (logerr) cwerr[zcw] <- 0
+    if (log10err) cwerr[zcw] <- 0
 
     title <- paste0(unique(colnames(pcu)), " (", unique(units(pcu)),")")
     set_plot_margins()
@@ -244,6 +250,8 @@ plotsurf <- function(freqs=0,
     timeaxis(3, labels=FALSE, time.zone=cwerr@time.zone)
     axis(side=4)
     mtext(title, side=3, line=0.5, cex=0.8)
+
+    # browser()
 
     tx <- positions(snr)
     t1 <- tx[1]
@@ -291,18 +299,18 @@ plotsurf <- function(freqs=0,
         cwerr[, 1] <- apply(cwerr@data, 1, function(x) { sum(x, na.rm=TRUE) })
         uncorr[, 1] <- apply(uncorr@data, 1, function(x) { sum(x, na.rm=TRUE) })
 
-        if (logerr) {
+        if (log10err) {
             # make log plot to expand lower values. Plot 0 as 0.1
             zcw  <- !is.na(cwerr[,1]) & cwerr[,1] == 0
             cwerr[zcw,1] <- 0.1
         }
-        plot(cwerr[,1], type="b",xlim=c(t1,t2), log=if(logerr) "y" else "")
+        plot(cwerr[,1], type="b",xlim=c(t1,t2), log=if(log10err) "y" else "")
 
         if (!do_dat) {
             timeaxis(3, time.zone=cwerr@time.zone, date.too=FALSE, xlab=FALSE)
             axis(side=4)
         }
-        if (logerr) cwerr[zcw,1] <- 0
+        if (log10err) cwerr[zcw,1] <- 0
 
         pcu <- uncorr[,1] / cwerr[,1] * 100
         zcw <- !is.na(cwerr[,1]) & cwerr[,1] == 0.

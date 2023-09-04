@@ -138,30 +138,32 @@ def getsurf():
             eprint("time={}, not parseable: {}".format(timestr,e))
             return os.EX_IOERR
 
-        tbls = tree.xpath('//table')
+        if timeval.year > 1970:
 
-        for tbl in tbls:
-            # look for Downstream Bonded Channels table
-            if tbl.xpath('.//*[contains(text(),"Downstream Bonded Channels")]'):
+            tbls = tree.xpath('//table')
 
-                rows = tbl.getchildren()
-                for row in rows:
-                    # first row has only the "Downstream ..." th
-                    # second row has "Channel" header
-                    tds = row.xpath('./td')
-                    if len(tds) == 0 or tds[0].text_content() == "Channel":
-                        continue
-                            
-                    vals = [col.text_content().encode('UTF-8').decode().strip() for col in tds]
-                    if len(vals) < 7:
-                        eprint("Only {} values in table row".format(len(vals)))
-                        continue
+            for tbl in tbls:
+                # look for Downstream Bonded Channels table
+                if tbl.xpath('.//*[contains(text(),"Downstream Bonded Channels")]'):
 
-                    vals[4] = vals[4].replace('MHz','').strip()
-                    vals[5] = vals[5].replace('dBmV','').strip()
-                    vals[6] = vals[6].replace('dB','').strip()
-                    vals = [val.replace('----','') for val in vals]
-                    print("{0},{1}".format(timeval,','.join(vals)))
+                    rows = tbl.getchildren()
+                    for row in rows:
+                        # first row has only the "Downstream ..." th
+                        # second row has "Channel" header
+                        tds = row.xpath('./td')
+                        if len(tds) == 0 or tds[0].text_content() == "Channel":
+                            continue
+                                
+                        vals = [col.text_content().encode('UTF-8').decode().strip() for col in tds]
+                        if len(vals) < 7:
+                            eprint("Only {} values in table row".format(len(vals)))
+                            continue
+
+                        vals[4] = vals[4].replace('MHz','').strip()
+                        vals[5] = vals[5].replace('dBmV','').strip()
+                        vals[6] = vals[6].replace('dB','').strip()
+                        vals = [val.replace('----','') for val in vals]
+                        print("{0},{1}".format(timeval,','.join(vals)))
 
     except etree.XPathEvalError as e:
         eprint('xpath exception={}'.format(e))
